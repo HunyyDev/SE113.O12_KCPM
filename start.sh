@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Start the first process
-# ./worker/start.sh &
+./worker/start.sh &
 
 # Start the second process
 ./server/start.sh &

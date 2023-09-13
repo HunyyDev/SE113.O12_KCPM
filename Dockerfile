@@ -1,5 +1,7 @@
 FROM python:3.8
 
+WORKDIR /app
+
 COPY install_node.sh .
 
 RUN chmod 777 install_node.sh 
