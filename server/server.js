@@ -43,8 +43,9 @@ async function main() {
         "/upload_image",
         upload.single("image"),
         async (req, res) => {
+            console.log(req.file.path);
             const resultPath = await handleInferenceImage(
-                path.join(req.file.path),
+                req.file.path,
                 req.body.threshold
             );
 
