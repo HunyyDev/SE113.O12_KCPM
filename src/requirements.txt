@@ -1,5 +1,6 @@
+Flask==2.3.3
 mmcv==2.0.1
 mmdeploy_runtime==1.2.0
 numpy==1.24.4
 opencv_python==4.8.0.76
-Requests==2.31.0
+gunicorn==21.2.0

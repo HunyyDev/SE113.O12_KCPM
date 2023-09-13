@@ -1,52 +1,19 @@
 FROM python:3.8
 
+#INSTALL PYTHON DEPENDENCIES
 WORKDIR /app
 
-COPY install_node.sh .
-
-RUN chmod 777 install_node.sh 
-
-RUN ./install_node.sh
-
-#INSTALL NODEJS DEPENDENCIES
-WORKDIR /app/server
-
-RUN mkdir /app/server/uploads
-
-COPY server/package*.json .
-
-RUN npm ci --omit=dev
-
-EXPOSE 7860
-
-ENV NODE_ENV=production
-
-#INSTALL PYTHON DEPENDENCIES
-WORKDIR /app/worker
-
-COPY worker/requirements.txt .
+COPY src/requirements.txt .
 
 RUN pip install -r requirements.txt
 
 RUN apt-get update && apt-get install -y libgl1
 
-COPY ./worker/libs/image.py /usr/local/lib/python3.8/site-packages/mmcv/visualization/image.py
+COPY ./src/libs/image.py /usr/local/lib/python3.8/site-packages/mmcv/visualization/image.py
 
 #COPY SORCE CODE
-COPY server /app/server
+COPY src /app
 
-COPY worker /app/worker
+EXPOSE 3000
 
-#COPY START SCRIPT
-WORKDIR /app
-
-COPY start.sh .
-
-RUN chmod 777 start.sh \
-    worker/start.sh \
-    server/start.sh \
-    /app/server/uploads \
-    /app/worker \
-    /app/server
-
-CMD [ "python3.8", "main.py" ]
+CMD [ "gunicorn", "-b", "0.0.0.0:3000", "main:app" ]

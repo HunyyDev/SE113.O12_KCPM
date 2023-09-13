@@ -1,7 +1,5 @@
-.gitignore
 **/*.jpg
 **/*.png
-server/node_modules
-server/uploads
-**/.vscode
+.vscode
 .git**
+src/__pycache__
