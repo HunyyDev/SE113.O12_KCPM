@@ -1,0 +1,7 @@
+.gitignore
+**/*.jpg
+**/*.png
+test.js
+server/node_modules
+**/.vscode
+.git**

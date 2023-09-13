@@ -1,0 +1,9 @@
+**/*.jpg
+**/*.png
+
+setup.py
+worker_test.pyx
+main.py
+
+serving_models/**
+!serving_models/onnx_static_s

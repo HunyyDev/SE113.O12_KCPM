@@ -1,0 +1,8 @@
+node_modules
+*.png
+*.jpg
+**/test.*
+**/*.mp4
+server/uploads/**
+**/.vscode
+**/.*mp4*
