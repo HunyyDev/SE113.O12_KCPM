@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 7860;
 const app = express();
 const sock = new zmq.Request();
 
