@@ -11,7 +11,7 @@ RUN ./install_node.sh
 #INSTALL NODEJS DEPENDENCIES
 WORKDIR /app/server
 
-RUN mkdir /app/server/uploads && chmod 777  /app/server/uploads
+RUN mkdir /app/server/uploads
 
 COPY server/package*.json .
 
@@ -35,13 +35,18 @@ COPY ./worker/libs/image.py /usr/local/lib/python3.8/site-packages/mmcv/visualiz
 #COPY SORCE CODE
 COPY server /app/server
 
-COPY worker /app/worker/
+COPY worker /app/worker
 
 #COPY START SCRIPT
 WORKDIR /app
 
 COPY start.sh .
 
-RUN chmod 777 start.sh worker/start.sh server/start.sh
+RUN chmod 777 start.sh \
+    worker/start.sh \
+    server/start.sh \
+    /app/server/uploads \
+    /app/worker \
+    /app/server
 
 CMD [ "./start.sh" ]
