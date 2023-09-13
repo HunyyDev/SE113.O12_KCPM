@@ -2,7 +2,9 @@ FROM python:3.8
 
 COPY install_node.sh .
 
-RUN chmod 777 install_node.sh && ./install_node.sh
+RUN chmod 777 install_node.sh 
+
+RUN ./install_node.sh
 
 #INSTALL NODEJS DEPENDENCIES
 WORKDIR /app/server
