@@ -6,9 +6,19 @@ const path = require("path");
 const fs = require("fs");
 const bodyParser = require('body-parser');
 
-const upload = multer({ storage: multer.diskStorage({}) });
+const storage = multer.diskStorage({
+    destination: (_req, _file, cb) => {
+        cb(null, "/app/server/uploads/");
+    },
+    filename: (_req, _file, cb) => {
+        const uniqueSuffix = Date.now().toString();
+        cb(null, uniqueSuffix);
+    },
+});
 
 const PORT = process.env.PORT || 7860;
+
+const upload = multer({ storage: storage });
 const app = express();
 const sock = new zmq.Request();
 
@@ -30,53 +40,44 @@ async function main() {
     init();
     app.use("/static", express.static("static"));
 
-    // const uploadImage = upload.single("image");
+    app.post("/upload_image", upload.single("image"), async (req, res) => {
+        if (!req.file) {
+            console.error(req.file)
+            res.sendStatus(500);
+            return;
+        }
 
-    // app.post('/upload_image', function (req, res) {
-    //     uploadImage(req, res, function (err) {
-    //         console.error(err)
-    //     });
-    // });
+        const resultPath = await handleInferenceImage(
+            req.file.path,
+            req.body.threshold
+        );
 
-    app.post("/upload_image", upload.single("image"), (req, res) => {
-        console.log(req.file)
-        res.sendStatus(200);
-    })
+        const readStream = fs.createReadStream(resultPath);
 
-    // console.log(req, res, error)
-    // if (error) console.error(error)
+        readStream.on("open", () => {
+            res.setHeader(
+                "Content-Disposition",
+                "attachment; filename=image.png"
+            );
+            res.setHeader("Content-Type", "image/png");
+            readStream.pipe(res);
+        });
 
-    // const resultPath = await handleInferenceImage(
-    //     req.file.path,
-    //     req.body.threshold
-    // );
+        readStream.on("error", (err) => {
+            res.status(500).json({
+                message: err,
+            });
+        });
 
-    // const readStream = fs.createReadStream(resultPath);
-
-    // readStream.on("open", () => {
-    //     res.setHeader(
-    //         "Content-Disposition",
-    //         "attachment; filename=image.png"
-    //     );
-    //     res.setHeader("Content-Type", "image/png");
-    //     readStream.pipe(res);
-    // });
-
-    // readStream.on("error", (err) => {
-    //     res.status(500).json({
-    //         message: err,
-    //     });
-    // });
-
-    // readStream.on("close", () => {
-    //     fs.unlink(resultPath, (err) => {
-    //         if (err) console.error(err);
-    //     });
-    //     fs.unlink(req.file.path, (err) => {
-    //         if (err) console.error(err);
-    //     });
-    // });
-    // });
+        readStream.on("close", () => {
+            fs.unlink(resultPath, (err) => {
+                if (err) console.error(err);
+            });
+            fs.unlink(req.file.path, (err) => {
+                if (err) console.error(err);
+            });
+        });
+    });
 
     app.post(
         "/upload_video",
