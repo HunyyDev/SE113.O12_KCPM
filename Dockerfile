@@ -11,7 +11,7 @@ RUN ./install_node.sh
 #INSTALL NODEJS DEPENDENCIES
 WORKDIR /app/server
 
-RUN mkdir -p /app/server/uploads
+RUN mkdir /app/server/uploads
 
 COPY server/package*.json .
 
