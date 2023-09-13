@@ -11,6 +11,8 @@ RUN ./install_node.sh
 #INSTALL NODEJS DEPENDENCIES
 WORKDIR /app/server
 
+RUN mkdir -p uploads
+
 COPY server/package*.json .
 
 RUN npm ci --omit=dev
