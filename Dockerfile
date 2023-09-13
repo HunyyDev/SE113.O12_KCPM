@@ -36,6 +36,6 @@ WORKDIR /app
 
 COPY start.sh .
 
-RUN chmod 777 start.sh
+RUN chmod 777 start.sh worker/start.sh server/start.sh
 
 CMD [ "./start.sh" ]

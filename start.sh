@@ -1,7 +1,5 @@
 #!/bin/bash
 
-chmod 777 ./worker/start.sh ./server/start.sh
-
 # Start the first process
 ./worker/start.sh &
 
