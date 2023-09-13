@@ -17,7 +17,7 @@ COPY server/package*.json .
 
 RUN npm ci --omit=dev
 
-EXPOSE 3000
+EXPOSE 7860
 
 ENV NODE_ENV=production
 
