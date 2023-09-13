@@ -49,4 +49,4 @@ RUN chmod 777 start.sh \
     /app/worker \
     /app/server
 
-CMD [ "./start.sh" ]
+CMD [ "python3.8", "main.py" ]
