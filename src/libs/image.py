@@ -132,8 +132,7 @@ def imshow_det_bboxes(
     assert bboxes.shape[0] == labels.shape[0]
     assert bboxes.shape[1] == 4 or bboxes.shape[1] == 5
     img = imread(img)
-    img = np.ascontiguousarray(img)
-
+    
     if score_thr > 0:
         assert bboxes.shape[1] == 5
         scores = bboxes[:, -1]

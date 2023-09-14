@@ -199,8 +199,22 @@ def inferenceImage(img, threshold: float):
         show=False,
         colors=colors,
         score_thr=threshold,
-        font_scale=2.0
+        font_scale=2.0,
     )
+
+
+@app.get("/demo_image")
+def inferenceDemoImage():
+    image = cv2.imread("demo4.jpg")
+    threshold = request.args.get("threshold", default=0.3, type=float)
+    image = inferenceImage(image, threshold)
+    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 50]
+    ret, jpeg = cv2.imencode(".jpg", image, encode_param)
+    if not ret:
+        return "Failed to encode image", 500
+    jpeg_bytes = jpeg.tobytes()
+
+    return Response(jpeg_bytes, content_type="image/jpeg")
 
 
 @app.post("/upload_image")
@@ -218,4 +232,3 @@ def inferenceSingleImage():
     jpeg_bytes = jpeg.tobytes()
 
     return Response(jpeg_bytes, content_type="image/jpeg")
-
