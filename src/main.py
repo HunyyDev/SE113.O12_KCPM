@@ -199,6 +199,7 @@ def inferenceImage(img, threshold: float):
         show=False,
         colors=colors,
         score_thr=threshold,
+        font_scale=5.0
     )
 
 
