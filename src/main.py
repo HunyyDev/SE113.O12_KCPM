@@ -194,7 +194,10 @@ def hello():
 
 
 def inferenceImage(img, threshold: float):
+    print(current_milli_time())
     bboxes, labels, _ = detector(img)
+    print(current_milli_time())
+
     return mmcv.imshow_det_bboxes(
         img=img,
         bboxes=bboxes,
