@@ -35,10 +35,34 @@
             "labels"
         ],
         "input_shape": null,
-        "optimize": true
+        "optimize": true,
+        "dynamic_axes": {
+            "input": {
+                "0": "batch",
+                "2": "height",
+                "3": "width"
+            },
+            "dets": {
+                "0": "batch",
+                "1": "num_dets"
+            },
+            "labels": {
+                "0": "batch",
+                "1": "num_dets"
+            }
+        }
     },
     "backend_config": {
-        "type": "onnxruntime"
+        "type": "onnxruntime",
+        "precision": "fp16",
+        "common_config": {
+            "min_positive_val": 1e-07,
+            "max_finite_val": 10000.0,
+            "keep_io_types": false,
+            "disable_shape_infer": false,
+            "op_block_list": null,
+            "node_block_list": null
+        }
     },
     "calib_config": {}
 }
