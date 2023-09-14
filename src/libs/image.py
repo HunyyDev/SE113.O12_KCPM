@@ -161,6 +161,7 @@ def imshow_det_bboxes(
             cv2.FONT_HERSHEY_TRIPLEX,
             font_scale,
             text_color,
+            4
         )
 
     if show:
