@@ -1,9 +1,13 @@
 import cv2
 import mmcv
 import numpy as np
+import time
 
 from flask import Flask, Response, request
 from mmdeploy_runtime import Detector
+
+def current_milli_time():
+    return round(time.time() * 1000)
 
 class_name = [
     "person",
@@ -190,7 +194,9 @@ def hello():
 
 
 def inferenceImage(img, threshold: float):
+    now = current_milli_time()
     bboxes, labels, _ = detector(img)
+    print(current_milli_time-now)
     return mmcv.imshow_det_bboxes(
         img=img,
         bboxes=bboxes,
