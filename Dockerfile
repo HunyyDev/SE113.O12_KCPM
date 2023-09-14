@@ -16,4 +16,4 @@ COPY src /app
 
 EXPOSE 3000
 
-# CMD [ "gunicorn", "-b", "0.0.0.0:3000", "main:app" ]
+CMD [ "gunicorn", "-b", "0.0.0.0:3000", "main:app" ]
