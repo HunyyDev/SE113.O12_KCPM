@@ -6,8 +6,10 @@ import time
 from flask import Flask, Response, request
 from mmdeploy_runtime import Detector
 
+
 def current_milli_time():
     return round(time.time() * 1000)
+
 
 class_name = [
     "person",
@@ -193,11 +195,10 @@ def hello():
     return "hello"
 
 
-def inferenceImage(img, threshold: float):
-    print(current_milli_time())
+def inferenceImage(img, threshold: float, rawResult: bool):
     bboxes, labels, _ = detector(img)
-    print(current_milli_time())
-
+    if rawResult:
+        return bboxes, labels
     return mmcv.imshow_det_bboxes(
         img=img,
         bboxes=bboxes,
@@ -231,8 +232,22 @@ def inferenceSingleImage():
 
     nparr = np.frombuffer(request.data, np.uint8)
     image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
     threshold = request.args.get("threshold", default=0.3, type=float)
-    image = inferenceImage(image, threshold)
+    raw = request.args.get("raw", default=False, type=bool)
+    if raw:
+        bboxes, labels = inferenceImage(image, threshold, raw)
+        removeIndexs = []
+        for i, bbox in enumerate(bboxes):
+            if bbox[4] < threshold:
+                removeIndexs.append(i)
+
+        bboxes = np.delete(bboxes, removeIndexs, axis=0)
+        labels = np.delete(labels, removeIndexs)
+
+        return {"bboxes": bboxes.tolist(), "labels": labels.tolist()}
+
+    image = inferenceImage(image, threshold, raw)
     ret, jpeg = cv2.imencode(".jpg", image)
     if not ret:
         return "Failed to encode image", 500
