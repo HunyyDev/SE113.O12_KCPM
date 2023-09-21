@@ -1,6 +1,7 @@
 import cv2
 import mmcv
 import numpy as np
+import time
 
 from mmdeploy_runtime import Detector
 
@@ -192,8 +193,10 @@ def hello() -> str:
     return "hello"
 
 
-def inferenceImage(img, threshold: float):
+def inferenceImage(img, threshold: float, rawResult: bool):
     bboxes, labels, _ = detector(img)
+    if rawResult:
+        return bboxes, labels
     return mmcv.imshow_det_bboxes(
         img=img,
         bboxes=bboxes,

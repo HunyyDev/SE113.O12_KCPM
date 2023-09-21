@@ -9,7 +9,7 @@
             "backend": "onnxruntime",
             "precision": "FP32",
             "batch_size": 1,
-            "dynamic_shape": false
+            "dynamic_shape": true
         }
     ],
     "customs": []

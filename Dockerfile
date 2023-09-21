@@ -1,6 +1,6 @@
 FROM python:3.8
 
-#INSTALL PYTHON DEPENDENCIES
+#INSTALL & MODIFY DEPENDENCIES 
 WORKDIR /app
 
 COPY src/requirements.txt .

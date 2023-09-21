@@ -132,8 +132,7 @@ def imshow_det_bboxes(
     assert bboxes.shape[0] == labels.shape[0]
     assert bboxes.shape[1] == 4 or bboxes.shape[1] == 5
     img = imread(img)
-    img = np.ascontiguousarray(img)
-
+    
     if score_thr > 0:
         assert bboxes.shape[1] == 5
         scores = bboxes[:, -1]
@@ -161,10 +160,11 @@ def imshow_det_bboxes(
             cv2.FONT_HERSHEY_TRIPLEX,
             font_scale,
             text_color,
+            4
         )
 
     if show:
         imshow(img, win_name, wait_time)
     if out_file is not None:
-        imwrite(img, out_file, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
+        imwrite(img, out_file, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
     return img

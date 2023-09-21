@@ -68,19 +68,19 @@
                     {
                         "type": "Collect",
                         "meta_keys": [
-                            "img_id",
                             "img_path",
-                            "img_shape",
-                            "img_norm_cfg",
-                            "scale_factor",
                             "flip",
-                            "valid_ratio",
-                            "ori_shape",
+                            "ori_filename",
                             "pad_param",
                             "pad_shape",
-                            "ori_filename",
-                            "filename",
-                            "flip_direction"
+                            "scale_factor",
+                            "valid_ratio",
+                            "flip_direction",
+                            "img_norm_cfg",
+                            "img_id",
+                            "img_shape",
+                            "ori_shape",
+                            "filename"
                         ],
                         "keys": [
                             "img"
@@ -92,7 +92,7 @@
                 "name": "rtmdet",
                 "type": "Task",
                 "module": "Net",
-                "is_batched": false,
+                "is_batched": true,
                 "input": [
                     "prep_output"
                 ],
@@ -117,7 +117,7 @@
                         "type": "nms",
                         "iou_threshold": 0.65
                     },
-                    "max_per_img": 300
+                    "max_per_img": 100
                 },
                 "output": [
                     "post_output"
