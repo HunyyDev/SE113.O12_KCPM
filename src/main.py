@@ -2,8 +2,12 @@ import cv2
 import mmcv
 import numpy as np
 
-from flask import Flask, Response, request
 from mmdeploy_runtime import Detector
+
+from typing import Union
+
+from fastapi import FastAPI, File, UploadFile
+from typing_extensions import Annotated
 
 class_name = [
     "person",
@@ -177,15 +181,14 @@ colors = [
 
 UPLOAD_FOLDER = "/uploads"
 
-app = Flask(__name__)
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app = FastAPI()
 
 model_path = "model"
 detector = Detector(model_path=model_path, device_name="cpu", device_id=0)
 
 
 @app.get("/")
-def hello():
+def hello() -> str:
     return "hello"
 
 
@@ -202,14 +205,10 @@ def inferenceImage(img, threshold: float):
     )
 
 
-@app.post("/upload_image")
-def inferenceSingleImage():
-    if request.data == b"":
-        return "The body is empty, expect image", 400
-
-    nparr = np.frombuffer(request.data, np.uint8)
+@app.post("/image")
+async def inferenceSingleImage(file: Annotated[bytes, File()], threshold: float = 0.3):
+    nparr = np.frombuffer(file, np.uint8)
     image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    threshold = request.args.get("threshold", default=0.3, type=float)
     image = inferenceImage(image, threshold)
     ret, jpeg = cv2.imencode(".jpg", image)
     if not ret:
@@ -218,3 +217,11 @@ def inferenceSingleImage():
 
     return Response(jpeg_bytes, content_type="image/jpeg")
 
+
+@app.post("/video/<id>")
+def inferenceVideo(id: str):
+    if id is None:
+        return "artifactId must not be empty", 400
+
+    if request.data == b"":
+        return "The body is empty, expected video", 400

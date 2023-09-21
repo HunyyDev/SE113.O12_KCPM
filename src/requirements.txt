@@ -1,6 +1,6 @@
-Flask==2.3.3
+fastapi==0.103.1
 mmcv==2.0.1
 mmdeploy_runtime==1.2.0
 numpy==1.24.4
 opencv_python==4.8.0.76
-gunicorn==21.2.0
+uvicorn==0.23.2
