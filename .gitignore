@@ -4,3 +4,4 @@
 **/*.mp4
 **/.vscode
 src/__pycache__
+src/.env
