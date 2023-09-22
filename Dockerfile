@@ -7,7 +7,7 @@ COPY src/requirements.txt .
 
 RUN pip install -r requirements.txt
 
-RUN apt-get update && apt-get install -y libgl1
+RUN apt-get update && apt-get install -y libgl1 ffmpeg
 
 COPY ./src/libs/image.py /usr/local/lib/python3.8/site-packages/mmcv/visualization/image.py
 
@@ -16,4 +16,4 @@ COPY src /app
 
 EXPOSE 3000
 
-CMD [ "gunicorn", "-b", "0.0.0.0:3000", "main:app" ]
+CMD [ "uvicorn", "main:app", "--host" ,"0.0.0.0" ,"--port", "3000"]

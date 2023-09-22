@@ -166,5 +166,5 @@ def imshow_det_bboxes(
     if show:
         imshow(img, win_name, wait_time)
     if out_file is not None:
-        imwrite(img, out_file, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
+        imwrite(img, out_file)
     return img

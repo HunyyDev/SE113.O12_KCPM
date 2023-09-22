@@ -3,3 +3,5 @@
 .vscode
 .git**
 src/__pycache__
+src/.env
+**/*.mp4
