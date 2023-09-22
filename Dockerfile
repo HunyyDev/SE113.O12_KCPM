@@ -19,11 +19,11 @@ COPY --chown=user src/requirements.txt .
 
 RUN pip install -r requirements.txt
 
-COPY ./src/libs/image.py /usr/local/lib/python3.8/site-packages/mmcv/visualization/image.py
+COPY ./src/libs/image.py /home/user/.local/lib/python3.8/site-packages/mmcv/visualization/image.py
 
 #COPY SORCE CODE
 COPY --chown=user src .
 
 EXPOSE 3000
 
-CMD [ "uvicorn", "main:app", "--host" ,"0.0.0.0" ,"--port", "3000"]
+# CMD [ "uvicorn", "main:app", "--host" ,"0.0.0.0" ,"--port", "3000"]

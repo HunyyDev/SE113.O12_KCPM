@@ -13,6 +13,171 @@ from supabase import create_client, Client
 from mmdeploy_runtime import Detector
 from fastapi import FastAPI, File, Response, UploadFile, BackgroundTasks
 
+
+model_path = "./model"
+detector = Detector(model_path=model_path, device_name="cpu", device_id=0)
+
+url: str = os.environ.get("SUPABASE_URL")
+key: str = os.environ.get("SUPABASE_KEY")
+supabase: Client = create_client(url, key)
+
+app = FastAPI()
+
+
+@app.get("/")
+def hello() -> str:
+    return "hello"
+
+
+def inferenceImage(img, threshold: float, isRaw: bool = False):
+    bboxes, labels, _ = detector(img)
+    if isRaw:
+        return bboxes, labels
+    return mmcv.imshow_det_bboxes(
+        img=img,
+        bboxes=bboxes,
+        labels=labels,
+        class_names=class_name,
+        show=False,
+        colors=colors,
+        score_thr=threshold,
+    )
+
+
+@app.post("/image")
+async def handleImageRequest(
+    file: bytes = File(...),
+    threshold: float = 0.3,
+    raw: bool = False,
+):
+    img = mmcv.imfrombytes(file, cv2.IMREAD_COLOR)
+    if raw:
+        bboxes, labels = inferenceImage(img, threshold, raw)
+        removeIndexs = []
+        for i, bbox in enumerate(bboxes):
+            if bbox[4] < threshold:
+                removeIndexs.append(i)
+
+        bboxes = np.delete(bboxes, removeIndexs, axis=0)
+        labels = np.delete(labels, removeIndexs)
+        return {"bboxes": bboxes.tolist(), "labels": labels.tolist()}
+
+    img = inferenceImage(img, threshold, raw)
+    ret, jpeg = cv2.imencode(".jpg", img)
+
+    if not ret:
+        return Response(content="Failed to encode image", status_code=500)
+    jpeg_bytes: bytes = jpeg.tobytes()
+
+    return Response(content=jpeg_bytes, media_type="image/jpeg")
+
+
+@app.post("/video/{artifactId}")
+async def handleVideoRequest(
+    artifactId: str,
+    file: UploadFile,
+    background_tasks: BackgroundTasks,
+    threshold: float = 0.3,
+):
+    try:
+        id = str(now())
+        os.mkdir(id)
+        async with aiofiles.open(os.path.join(id, "input.mp4"), "wb") as out_file:
+            while content := await file.read(1024):
+                await out_file.write(content)
+        background_tasks.add_task(inferenceVideo, artifactId, id, threshold)
+        return id + ".mp4"
+    except ValueError as err:
+        print(err)
+        print("Error processing video")
+        shutil.rmtree(id)
+
+
+def now():
+    return round(time.time() * 1000)
+
+
+def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
+    try:
+        Process(updateArtifact(artifactId, {"status": "processing"})).start()
+        cap = cv2.VideoCapture(
+            filename=os.path.join(inputDir, "input.mp4"), apiPreference=cv2.CAP_FFMPEG
+        )
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        size = (
+            int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
+            int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),
+        )
+        result = cv2.VideoWriter(
+            filename=os.path.join(inputDir, "out.mp4"),
+            fourcc=cv2.VideoWriter_fourcc(*"mp4v"),
+            fps=fps,
+            frameSize=size,
+        )
+
+        while cap.isOpened():
+            res, frame = cap.read()
+            if res == False:
+                break
+
+            resFram = inferenceImage(frame, threshold)
+            result.write(resFram)
+
+        cap.release()
+        result.release()
+
+        with open(os.path.join(inputDir, "out.mp4"), "rb") as f:
+            res = supabase.storage.from_("video").upload(
+                inputDir + ".mp4", f, {"content-type": "video/mp4"}
+            )
+        updateArtifact(
+            artifactId,
+            {
+                "status": "success",
+                "path": "https://hdfxssmjuydwfwarxnfe.supabase.co/storage/v1/object/public/video/"
+                + inputDir
+                + ".mp4",
+            },
+        )
+    except:
+        Process(
+            updateArtifact(
+                artifactId,
+                {
+                    "status": "fail",
+                },
+            )
+        ).start()
+    finally:
+        shutil.rmtree(inputDir)
+
+
+def writeInferencerResult(
+    image,
+    threshold: float,
+    inputDir: str,
+    index,
+):
+    bboxes, labels, _ = detector(image)
+    mmcv.imshow_det_bboxes(
+        img=image,
+        bboxes=bboxes,
+        labels=labels,
+        class_names=class_name,
+        show=False,
+        colors=colors,
+        score_thr=threshold,
+        out_file="{}/{:010d}.png".format(inputDir, index),
+    )
+
+
+def updateArtifact(artifactId: str, body):
+    url = "https://firebasetot.onrender.com/artifacts/" + artifactId
+    payload = json.dumps(body)
+    headers = {"Content-Type": "application/json"}
+    requests.request("PATCH", url, headers=headers, data=payload)
+
+
 class_name = [
     "person",
     "bicycle",
@@ -181,171 +346,3 @@ colors = [
     (250, 250, 210),
     (253, 245, 230),
 ]
-
-model_path = "./model"
-detector = Detector(model_path=model_path, device_name="cpu", device_id=0)
-
-url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY")
-supabase: Client = create_client(url, key)
-
-app = FastAPI()
-
-
-@app.get("/")
-def hello() -> str:
-    return "hello"
-
-
-def inferenceImage(img, threshold: float, isRaw: bool = False):
-    bboxes, labels, _ = detector(img)
-    if isRaw:
-        return bboxes, labels
-    return mmcv.imshow_det_bboxes(
-        img=img,
-        bboxes=bboxes,
-        labels=labels,
-        class_names=class_name,
-        show=False,
-        colors=colors,
-        score_thr=threshold,
-    )
-
-
-@app.post("/image")
-async def handleImageRequest(
-    file: bytes = File(...),
-    threshold: float = 0.3,
-    raw: bool = False,
-):
-    img = mmcv.imfrombytes(file, cv2.IMREAD_COLOR)
-    if raw:
-        bboxes, labels = inferenceImage(img, threshold, raw)
-        removeIndexs = []
-        for i, bbox in enumerate(bboxes):
-            if bbox[4] < threshold:
-                removeIndexs.append(i)
-
-        bboxes = np.delete(bboxes, removeIndexs, axis=0)
-        labels = np.delete(labels, removeIndexs)
-        return {"bboxes": bboxes.tolist(), "labels": labels.tolist()}
-
-    img = inferenceImage(img, threshold, raw)
-    ret, jpeg = cv2.imencode(".jpg", img)
-
-    if not ret:
-        return Response(content="Failed to encode image", status_code=500)
-    jpeg_bytes: bytes = jpeg.tobytes()
-
-    return Response(content=jpeg_bytes, media_type="image/jpeg")
-
-
-@app.post("/video/{artifactId}")
-async def handleVideoRequest(
-    artifactId: str,
-    file: UploadFile,
-    background_tasks: BackgroundTasks,
-    threshold: float = 0.3,
-):
-    try:
-        id = str(now())
-        os.mkdir(id)
-        async with aiofiles.open(os.path.join(id, "input.mp4"), "wb") as out_file:
-            while content := await file.read(1024):
-                await out_file.write(content)
-        background_tasks.add_task(inferenceVideo, artifactId, id, threshold)
-        return id + ".mp4"
-    except ValueError as err:
-        print(err)
-        print("Error processing video")
-        shutil.rmtree(id)
-
-
-def now():
-    return round(time.time() * 1000)
-
-
-def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
-    try:
-        Process(
-            updateArtifact(
-                artifactId, {"status": "processing"}
-            )
-        ).start()
-        cap = cv2.VideoCapture(
-            filename=os.path.join(inputDir, "input.mp4"), apiPreference=cv2.CAP_FFMPEG
-        )
-        fps = cap.get(cv2.CAP_PROP_FPS)
-        size = (
-            int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
-            int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),
-        )
-        result = cv2.VideoWriter(
-            filename=os.path.join(inputDir, "out.mp4"),
-            fourcc=cv2.VideoWriter_fourcc(*"mp4v"),
-            fps=fps,
-            frameSize=size,
-        )
-
-        while cap.isOpened():
-            res, frame = cap.read()
-            if res == False:
-                break
-
-            result.write(inferenceImage(frame, threshold))
-
-        cap.release()
-        result.release()
-
-        with open(os.path.join(inputDir, "out.mp4"), "rb") as f:
-            res = supabase.storage.from_("video").upload(
-                inputDir + ".mp4", f, {"content-type": "video/mp4"}
-            )
-        Process(
-            updateArtifact(
-                artifactId,
-                {
-                    "status": "success",
-                    "path": "https://hdfxssmjuydwfwarxnfe.supabase.co/storage/v1/object/public/video/"
-                    + inputDir
-                    + ".mp4",
-                },
-            )
-        ).start()
-    except:
-        Process(
-            updateArtifact(
-                artifactId,
-                {
-                    "status": "fail",
-                },
-            )
-        ).start()
-    finally:
-        shutil.rmtree(inputDir)
-
-
-def writeInferencerResult(
-    image,
-    threshold: float,
-    inputDir: str,
-    index,
-):
-    bboxes, labels, _ = detector(image)
-    mmcv.imshow_det_bboxes(
-        img=image,
-        bboxes=bboxes,
-        labels=labels,
-        class_names=class_name,
-        show=False,
-        colors=colors,
-        score_thr=threshold,
-        out_file="{}/{:010d}.png".format(inputDir, index),
-    )
-
-
-def updateArtifact(artifactId: str, body):
-    url = "https://firebasetot.onrender.com/artifacts/" + artifactId
-    payload = json.dumps(body)
-    headers = {"Content-Type": "application/json"}
-    requests.request("PATCH", url, headers=headers, data=payload)
