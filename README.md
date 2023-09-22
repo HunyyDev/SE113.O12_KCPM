@@ -1,8 +1,8 @@
 ---
 title: Rtmdet
-emoji: 🎁
+emoji: 🌍
 colorFrom: blue
-colorTo: blue
+colorTo: purple
 sdk: docker
 pinned: false
 app_port: 3000
