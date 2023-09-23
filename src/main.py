@@ -11,7 +11,7 @@ import json
 
 from supabase import create_client, Client
 from mmdeploy_runtime import Detector
-from fastapi import FastAPI, File, Response, UploadFile, BackgroundTasks
+from fastapi import FastAPI, File, Response, UploadFile, BackgroundTasks, WebSocket
 
 
 model_path = "./model"
@@ -152,30 +152,23 @@ def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
         shutil.rmtree(inputDir)
 
 
-def writeInferencerResult(
-    image,
-    threshold: float,
-    inputDir: str,
-    index,
-):
-    bboxes, labels, _ = detector(image)
-    mmcv.imshow_det_bboxes(
-        img=image,
-        bboxes=bboxes,
-        labels=labels,
-        class_names=class_name,
-        show=False,
-        colors=colors,
-        score_thr=threshold,
-        out_file="{}/{:010d}.png".format(inputDir, index),
-    )
-
-
 def updateArtifact(artifactId: str, body):
     url = "https://firebasetot.onrender.com/artifacts/" + artifactId
     payload = json.dumps(body)
     headers = {"Content-Type": "application/json"}
     requests.request("PATCH", url, headers=headers, data=payload)
+
+
+@app.websocket("/image")
+async def websocketEndpoint(websocket: WebSocket, threshold: float = 0.3):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_bytes()
+        img = mmcv.imfrombytes(data, cv2.IMREAD_COLOR)
+        bboxes, labels = inferenceImage(img, threshold, True)
+        await websocket.send_json(
+            {"bboxes": bboxes.tolist(), "labels": labels.tolist()}
+        )
 
 
 class_name = [
