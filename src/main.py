@@ -9,9 +9,20 @@ import shutil
 import requests
 import json
 
+from dotenv import load_dotenv
+
+load_dotenv()
 from supabase import create_client, Client
 from mmdeploy_runtime import Detector
-from fastapi import FastAPI, File, Response, UploadFile, BackgroundTasks, WebSocket
+from fastapi import (
+    FastAPI,
+    File,
+    Response,
+    UploadFile,
+    BackgroundTasks,
+    WebSocket,
+    WebSocketDisconnect,
+)
 
 
 model_path = "./model"
@@ -162,13 +173,16 @@ def updateArtifact(artifactId: str, body):
 @app.websocket("/image")
 async def websocketEndpoint(websocket: WebSocket, threshold: float = 0.3):
     await websocket.accept()
-    while True:
-        data = await websocket.receive_bytes()
-        img = mmcv.imfrombytes(data, cv2.IMREAD_COLOR)
-        bboxes, labels = inferenceImage(img, threshold, True)
-        await websocket.send_json(
-            {"bboxes": bboxes.tolist(), "labels": labels.tolist()}
-        )
+    try:
+        while True:
+            data = await websocket.receive_bytes()
+            img = mmcv.imfrombytes(data, cv2.IMREAD_COLOR)
+            bboxes, labels = inferenceImage(img, threshold, True)
+            await websocket.send_json(
+                {"bboxes": bboxes.tolist(), "labels": labels.tolist()}
+            )
+    except WebSocketDisconnect:
+        pass
 
 
 class_name = [
