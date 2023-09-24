@@ -12,6 +12,7 @@ import json
 from dotenv import load_dotenv
 
 load_dotenv()
+
 from supabase import create_client, Client
 from mmdeploy_runtime import Detector
 from fastapi import (
@@ -43,6 +44,14 @@ def hello() -> str:
 def inferenceImage(img, threshold: float, isRaw: bool = False):
     bboxes, labels, _ = detector(img)
     if isRaw:
+        removeIndexs = []
+        for i, bbox in enumerate(bboxes):
+            if bbox[4] < threshold:
+                removeIndexs.append(i)
+
+        bboxes = np.delete(bboxes, removeIndexs, axis=0)
+        labels = np.delete(labels, removeIndexs)
+
         return bboxes, labels
     return mmcv.imshow_det_bboxes(
         img=img,
@@ -64,13 +73,6 @@ async def handleImageRequest(
     img = mmcv.imfrombytes(file, cv2.IMREAD_COLOR)
     if raw:
         bboxes, labels = inferenceImage(img, threshold, raw)
-        removeIndexs = []
-        for i, bbox in enumerate(bboxes):
-            if bbox[4] < threshold:
-                removeIndexs.append(i)
-
-        bboxes = np.delete(bboxes, removeIndexs, axis=0)
-        labels = np.delete(labels, removeIndexs)
         return {"bboxes": bboxes.tolist(), "labels": labels.tolist()}
 
     img = inferenceImage(img, threshold, raw)
