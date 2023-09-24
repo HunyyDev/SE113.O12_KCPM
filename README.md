@@ -1,6 +1,6 @@
 ---
-title: Rtmdet
-emoji: 🌍
+title: Rtmdet - server2
+emoji: 🐱‍👤
 colorFrom: blue
 colorTo: purple
 sdk: docker
