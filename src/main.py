@@ -1,3 +1,4 @@
+import asyncio
 from multiprocessing import Process
 import os
 import time
@@ -57,7 +58,7 @@ def inferenceImage(img, threshold: float, isRaw: bool = False):
         img=img,
         bboxes=bboxes,
         labels=labels,
-        class_names=class_name,
+        class_names=classNames,
         show=False,
         colors=colors,
         score_thr=threshold,
@@ -110,7 +111,7 @@ def now():
     return round(time.time() * 1000)
 
 
-def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
+async def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
     try:
         Process(updateArtifact(artifactId, {"status": "processing"})).start()
         cap = cv2.VideoCapture(
@@ -128,8 +129,14 @@ def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
             frameSize=size,
         )
 
+        isFirstFrame = True
+        thumbnail = None
         while cap.isOpened():
             res, frame = cap.read()
+            if isFirstFrame:
+                isFirstFrame = False
+                thumbnail = frame
+
             if res == False:
                 break
 
@@ -139,10 +146,35 @@ def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
         cap.release()
         result.release()
 
-        with open(os.path.join(inputDir, "out.mp4"), "rb") as f:
-            res = supabase.storage.from_("video").upload(
-                inputDir + ".mp4", f, {"content-type": "video/mp4"}
+        def createThumbnail(thumbnail):
+            thumbnail = cv2.resize(
+                src=thumbnail, dsize=(160, 160), interpolation=cv2.INTER_AREA
             )
+            cv2.imwrite(os.path.join(inputDir, "thumbnail.jpg"), thumbnail)
+
+        createThumbnail(thumbnail)
+
+        async def uploadVideo():
+            async with aiofiles.open(os.path.join(inputDir, "out.mp4"), "rb") as f:
+                supabase.storage.from_("video").upload(
+                    inputDir + ".mp4", await f.read(), {"content-type": "video/mp4"}
+                )
+
+        async def uploadThumbnail():
+            async with aiofiles.open(
+                os.path.join(inputDir, "thumbnail.jpg"), "rb"
+            ) as f:
+                supabase.storage.from_("thumbnail").upload(
+                    inputDir + ".jpg", await f.read(), {"content-type": "image/jpeg"}
+                )
+
+        try:
+            n = now()
+            _, _ = await asyncio.gather(uploadVideo(), uploadThumbnail())
+            print(now() - n)
+        except Exception as e:
+            print(e)
+
         updateArtifact(
             artifactId,
             {
@@ -150,6 +182,9 @@ def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
                 "path": "https://hdfxssmjuydwfwarxnfe.supabase.co/storage/v1/object/public/video/"
                 + inputDir
                 + ".mp4",
+                "thumbnailURL": "https://hdfxssmjuydwfwarxnfe.supabase.co/storage/v1/object/public/thumbnail/"
+                + inputDir
+                + ".jpg",
             },
         )
     except:
@@ -187,7 +222,7 @@ async def websocketEndpoint(websocket: WebSocket, threshold: float = 0.3):
         pass
 
 
-class_name = [
+classNames = [
     "person",
     "bicycle",
     "car",
