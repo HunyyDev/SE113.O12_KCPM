@@ -1,7 +1,7 @@
 ---
-title: Rtmdet - server2
-emoji: 🐱‍👤
-colorFrom: blue
+title: Rtmdet
+emoji: 🐠
+colorFrom: indigo
 colorTo: purple
 sdk: docker
 pinned: false
