@@ -1,8 +1,8 @@
 ---
 title: Rtmdet
 emoji: 🐠
-colorFrom: indigo
-colorTo: purple
+colorFrom: yellow
+colorTo: pink
 sdk: docker
 pinned: false
 app_port: 3000
