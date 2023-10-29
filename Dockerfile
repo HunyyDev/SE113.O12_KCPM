@@ -12,18 +12,15 @@ ENV HOME=/home/user \
 
 RUN pip install --no-cache-dir --upgrade pip
 
-#INSTALL & MODIFY DEPENDENCIES 
+#COPY SOURCE CODE
 WORKDIR ${HOME}/app
 
-COPY --chown=user app/requirements.txt .
+COPY --chown=user . .
 
-RUN pip install -r requirements.txt
+RUN pip install -r ./app/requirements.txt
 
 COPY ./libs/image.py /home/user/.local/lib/python3.8/site-packages/mmcv/visualization/image.py
 
-#COPY SORCE CODE
-COPY --chown=user app .
-
 EXPOSE 3000
 
-CMD [ "uvicorn", "main:app", "--host" ,"0.0.0.0" ,"--port", "3000"]
+CMD [ "uvicorn", "app.main:app", "--host" ,"0.0.0.0" ,"--port", "3000"]
