@@ -1,8 +1,8 @@
 ---
-title: Rtmdet - server2
-emoji: 🐱‍👤
-colorFrom: blue
-colorTo: purple
+title: Rtmdet
+emoji: 🐠
+colorFrom: yellow
+colorTo: pink
 sdk: docker
 pinned: false
 app_port: 3000
