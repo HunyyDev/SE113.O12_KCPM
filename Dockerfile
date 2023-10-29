@@ -15,14 +15,14 @@ RUN pip install --no-cache-dir --upgrade pip
 #INSTALL & MODIFY DEPENDENCIES 
 WORKDIR ${HOME}/app
 
-COPY --chown=user src/requirements.txt .
+COPY --chown=user app/requirements.txt .
 
 RUN pip install -r requirements.txt
 
-COPY ./src/libs/image.py /home/user/.local/lib/python3.8/site-packages/mmcv/visualization/image.py
+COPY ./libs/image.py /home/user/.local/lib/python3.8/site-packages/mmcv/visualization/image.py
 
 #COPY SORCE CODE
-COPY --chown=user src .
+COPY --chown=user app .
 
 EXPOSE 3000
 

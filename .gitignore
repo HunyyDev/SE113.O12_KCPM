@@ -1,7 +1,6 @@
-**/*.png
-**/*.jpg
 **/test.*
-**/*.mp4
 **/.vscode
-src/__pycache__
-src/.env
+app/__pycache__
+app/.env
+app/firebase_config.json
+demo
