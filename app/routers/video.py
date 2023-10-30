@@ -2,25 +2,25 @@ import asyncio
 import json
 from multiprocessing import Process
 import os
+import re
 import shutil
 import time
 import aiofiles
 import cv2
-from fastapi import APIRouter, UploadFile, BackgroundTasks
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    UploadFile,
+    BackgroundTasks,
+    status,
+)
 import requests
 from app import supabase
-import firebase_admin
-from firebase_admin import credentials
-
+from app.dependencies import get_current_user
 from app.routers.image import inferenceImage
 
 router = APIRouter(prefix="/video")
-
-firebase_app = firebase_admin.initialize_app(
-    credential=credentials.Certificate(
-        json.loads(os.environ.get("FIREBASE_CREDENTIALS"))
-    )
-)
 
 
 @router.post("/{artifactId}")
@@ -29,7 +29,14 @@ async def handleVideoRequest(
     file: UploadFile,
     background_tasks: BackgroundTasks,
     threshold: float = 0.3,
+    user=Depends(get_current_user),
 ):
+    if re.search("^video\/", file.content_type) is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File must be video",
+        )
+
     try:
         id = str(now())
         os.mkdir(id)

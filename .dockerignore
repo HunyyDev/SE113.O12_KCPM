@@ -1,6 +1,8 @@
 **/test.*
 **/.vscode
-app/__pycache__
+**/__pycache__
 **/.env
 app/firebase_config.json
 demo
+**/*.mp4
+**/*.jpg
