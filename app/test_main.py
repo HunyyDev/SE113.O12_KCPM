@@ -1,2 +1,2 @@
 def test_main():
-    asset: 1 == 1
+    assert 1 == 1
