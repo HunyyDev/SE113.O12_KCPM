@@ -28,6 +28,7 @@ jobs:
         conda install pip
         pip install flake8 pytest
         pip install uvicorn
+        pip install --force-reinstall httpcore==0.15
         if [ -f app/requirements.txt ]; then pip install -r app/requirements.txt; fi
     - name: Lint with flake8
       run: |
@@ -39,6 +40,11 @@ jobs:
       run: |
         # build the server for testing API
         uvicorn app.main:app --host 0.0.0.0 --port 3000
+      env:
+        SUPABASE_URL: https://hdfxssmjuydwfwarxnfe.supabase.co
+        SUPABASE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+        FIREBASE_CREDENTIALS: ${"type":"service_account","project_id":"traffictracking-a103e","private_key_id":"8499dc5f84cb64ad3691ebfd91d910a8a0a3f8ca","private_key":"-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDRx35/fB5QPo0T\n+OCYjTcC8I9DWxGljWsl/UgdlUWcVjotP47bb4BVxuxrppkKAovtmE4C94GzOLk4\n80zKqmIq2tDMvq/9q2Wc5hMAkKjQno1Kx9HTeg09r+7PbShoocWRiQXHRB0gGmOP\nXFNfH1EpFJI1VHcuNPHuyr0dJJdAgJnpLNmtH8GoI4+Wb3aAPVFk6KNrVMMlwVsk\n1Pla2TiGz19tjGI7INTp9uRB6M33RDX8b2+WkkNJV0c5jzjQcHXrog3mQIYJTXVR\nnPkB5roK8uP+e1oUTEB5iXVT3eohCCsO47B94H2cd21QgTNB1WI/p1zcJnVwFMfw\nu5O2uNkPAgMBAAECggEABHn71o+Y/ABhtU/lxwuYZW0puXe7iCtc4nolrE/vpNbo\nNef5ze/yrqHokKGE+YQ1ZTQPUhvi/iaTOUZj2J1LK/vwYbYd/k1GhVMZi7UKjS0c\n+cAK17buimbzMyTyrEzrcOAaKfbnojQ99KS1OL3r1vMT7aRoSKmjkgNshq8ttRgf\niLO4ctmpCOd7B8BocTyKzvP6k47BsxHXRx88FaJGz+l3jh84MlXhFdOND1Yg1otp\nNk0jLrrpkuz406y2RZcYPCEx0RwcVKJIQ/NGRk4Q3bom7N/eaE5b18C7SyyLT0SG\n0SNJijA+TWDKJz3Z5cWgOsItCd6ahxXLJwrm0Yj4DQKBgQD1MMUg5qwe+FSlieZX\nDI1TbX7UrMIWhDZY07PaWkrNHAP4HUl/HnpU9LD/1g6GFxjaL5MyXhSxwJlfvSLu\nWZ45Fd6tsXiKha0vvW3l15NkHFvY99SUvbLRFxA51nqAKZ94R3onEHRpMV9VgJyk\nbo8UvoBAn5ThMybfO6LBr0DJCwKBgQDbBxJMwsVMXYXjUzSbt/gbWO2ZvmujDXIM\n2WkF8qtxg9JdmGzuXBCAj6dMJD6P4B+wDrIMXqPFXixsFM7IiFPHo810Gm9N1+bE\nBq0oSx8K6wRjtd8CFHfouoIxh9oggUcvIjAGjH1J2QAy5fMtPEBablDKxQJEZGj4\nBbjVnD0ajQKBgQCcyOHU5wv7BcqCzApJcZJRXbvzXMEDSunBpSXlo0UfoSF8n6Wm\nrqOE/a7M+WDyJ4TRyAg09en/u+uXR8c1aIL/d9ebc9djpJUY6OWESnRKWMP2mosJ\nzb+xajEK+vX8TCFX9UTMA/6cYWDXuNTxZG0D08kJCcJWurHJn0W02k7v/wKBgGrG\nZsBvDxnsWdH5hSMIq3ZBgws5TmXdryTedBmHNNcQ6WPhY/FLhmv2HBu9a5ZeL3R3\npYrsNDCKeWNzPV97PkSL8SPRo0MypngXvSBwhsCe07P8PKxZ6B7XlZKp5MeF3nr2\n0qzOnmF63WLywPrjbYfoUZCYPEO1I4sN1w6jrRIdAoGBANLfWQkZ0iWtefZ2mKxq\nfRiZ+5IO/GL60l8rBRC7AIJbf1qfndx/0ntIyPJMCyMeYSYkuFrVAbSxZtvx9SRi\nnqRRFYKpz+Cbll3JSOh/pN5nIaPJ0edFVQPKUUmeXHbSiwS6kv7QsD8j3mgWfGLG\n8KveVB7ts8GguFop3M1abFnX\n-----END PRIVATE KEY-----\n","client_email":"firebase-adminsdk-c3gli@traffictracking-a103e.iam.gserviceaccount.com","client_id":"106068082191464198964","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_x509_cert_url":"https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-c3gli%40traffictracking-a103e.iam.gserviceaccount.com","universe_domain":"googleapis.com"}
+
     - name: Test with pytest
       run: |
         pytest

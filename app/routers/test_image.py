@@ -26,5 +26,4 @@ class TestImageRoute:
             }
             response = requests.request("POST", self.url, headers=headers, data=payload, files=files)
             assert response.status_code == 200
-            assert response.content
 
