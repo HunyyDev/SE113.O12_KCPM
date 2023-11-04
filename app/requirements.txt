@@ -1,7 +1,7 @@
 aiofiles==23.2.1
 fastapi==0.103.1
 mmcv==2.0.1
-mmdeploy_runtime==1.2.0
+mmdeploy_runtime==1.3.0
 numpy==1.24.4
 opencv_python==4.8.0.76
 python-dotenv==1.0.0
