@@ -1,0 +1,10 @@
+services:
+    app:
+        build: .
+        image: phuochungus/rtmdet
+        ports:
+            - "3000:3000"
+        environment:
+            - SUPABASE_URL=your-supabase-url
+            - SUPABASE_KEY=your-supabase-key
+            - FIREBASE_CREDENTIALS=your-firebase-credentials
