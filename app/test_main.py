@@ -1,5 +1,6 @@
 from app.main import app
 import pytest
+from fastapi.testclient import TestClient
 @pytest.fixture
 def client():
     client = TestClient(app, "http://0.0.0.0:3000")
