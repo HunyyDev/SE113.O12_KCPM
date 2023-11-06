@@ -39,7 +39,8 @@ jobs:
     - name: Modified .conda mmcv item
       run: |
         # copy image.py to mmcv location
-        ls $CONDA
+        ls $CONDA/pkgs
+        ls $CONDA/lib
         cp libs/image.py $CONDA/Lib/site-packages/mmcv/visualization/image.py
     - name: Test with pytest
       run: |
