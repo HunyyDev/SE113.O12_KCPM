@@ -31,6 +31,7 @@ async def handleImageRequest(
 
 
 def inferenceImage(img, threshold: float, isRaw: bool = False):
+    print(detector)
     bboxes, labels, _ = detector(img)
     if isRaw:
         removeIndexs = []
