@@ -1,20 +1,17 @@
-import os
 import mmcv
 import numpy as np
 from app.routers.image import inferenceImage
-from app.routers.image import handleImageRequest
-import requests
 import pytest
-from io import StringIO
 import pytest
-from app.main import createApp
-from PIL import Image
 from fastapi.testclient import TestClient
+from app.main import app
+
 @pytest.fixture
 def client():
-    client = TestClient(createApp(), "http://0.0.0.0:3000")
+    client = TestClient(app, "http://0.0.0.0:3000")
     yield client
 class TestImageRoute():
+    img = mmcv.imread('demo.jpg')
     url = "http://0.0.0.0:3000/image"
     def test_inferenceImage(self):
         bboxes, labels = inferenceImage(mmcv.imread('demo.jpg'), 0.3, True)
