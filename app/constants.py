@@ -166,3 +166,5 @@ classNames = [
     "hair drier",
     "toothbrush",
 ]
+
+test_uid = "VAbtgG1IrWSOqoJgxe7u2yEqpIg2"
