@@ -2,13 +2,10 @@ import mmcv
 import numpy as np
 from app.routers.image import inferenceImage
 import pytest
-import pytest
 from fastapi.testclient import TestClient
 from .main import app
-@pytest.fixture
-def client():
-    client = TestClient(app, "http://0.0.0.0:3000")
-    yield client
+client = TestClient(app, "http://0.0.0.0:3000")
+
 class TestImageRoute():
     img = mmcv.imread('demo.jpg')
     url = "http://0.0.0.0:3000/image"
@@ -17,7 +14,7 @@ class TestImageRoute():
     #     assert len(bboxes.tolist()) > 0 and len(labels.tolist()) > 0 and len(bboxes.tolist()) == len(labels.tolist())
     #     result = inferenceImage(self.img, 0.3)
     #     assert type(result) is np.ndarray and result.shape == self.img.shape
-    def test_ImageAPI(self, client):
+    def test_ImageAPI(self):
         payload = {}
         files=[
         ('file',('demo.jpg',open('demo.jpg','rb'),'image/jpeg'))
