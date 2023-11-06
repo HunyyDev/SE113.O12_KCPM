@@ -1,10 +1,11 @@
 from fastapi import APIRouter, File, Response, WebSocket, WebSocketDisconnect
-import mmcv
 import cv2
 import numpy as np
 from app.constants import classNames, colors
 from app import detector
 
+from mmcv import imfrombytes
+from app.custom_mmcv.main import imshow_det_bboxes
 
 router = APIRouter(prefix="/image")
 
@@ -15,7 +16,7 @@ async def handleImageRequest(
     threshold: float = 0.3,
     raw: bool = False,
 ):
-    img = mmcv.imfrombytes(file, cv2.IMREAD_COLOR)
+    img = imfrombytes(file, cv2.IMREAD_COLOR)
     if raw:
         bboxes, labels = inferenceImage(img, threshold, raw)
         return {"bboxes": bboxes.tolist(), "labels": labels.tolist()}
@@ -42,7 +43,7 @@ def inferenceImage(img, threshold: float, isRaw: bool = False):
         labels = np.delete(labels, removeIndexs)
 
         return bboxes, labels
-    return mmcv.imshow_det_bboxes(
+    return imshow_det_bboxes(
         img=img,
         bboxes=bboxes,
         labels=labels,
@@ -59,7 +60,7 @@ async def websocketEndpoint(websocket: WebSocket, threshold: float = 0.3):
     try:
         while True:
             data = await websocket.receive_bytes()
-            img = mmcv.imfrombytes(data, cv2.IMREAD_COLOR)
+            img = imfrombytes(data, cv2.IMREAD_COLOR)
             bboxes, labels = inferenceImage(img, threshold, True)
             await websocket.send_json(
                 {"bboxes": bboxes.tolist(), "labels": labels.tolist()}

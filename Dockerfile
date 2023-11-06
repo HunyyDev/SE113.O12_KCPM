@@ -19,8 +19,6 @@ COPY --chown=user . .
 
 RUN pip install -r ./app/requirements.txt
 
-COPY ./libs/image.py /home/user/.local/lib/python3.8/site-packages/mmcv/visualization/image.py
-
 EXPOSE 3000
 
 CMD [ "uvicorn", "app.main:app", "--host" ,"0.0.0.0" ,"--port", "3000"]

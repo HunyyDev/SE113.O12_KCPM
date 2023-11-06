@@ -1,4 +1,6 @@
+# THE ORIGINAL mmcv.imshow_det_bboxes
 # Copyright (c) OpenMMLab. All rights reserved.
+
 from typing import List, Optional, Union
 
 import cv2
@@ -30,61 +32,6 @@ def imshow(img: Union[str, np.ndarray], win_name: str = "", wait_time: int = 0):
                 break
     else:
         ret = cv2.waitKey(wait_time)
-
-
-def imshow_bboxes(
-    img: Union[str, np.ndarray],
-    bboxes: Union[list, np.ndarray],
-    colors: ColorType = "green",
-    top_k: int = -1,
-    thickness: int = 1,
-    show: bool = True,
-    win_name: str = "",
-    wait_time: int = 0,
-    out_file: Optional[str] = None,
-):
-    """Draw bboxes on an image.
-
-    Args:
-        img (str or ndarray): The image to be displayed.
-        bboxes (list or ndarray): A list of ndarray of shape (k, 4).
-        colors (Color or str or tuple or int or ndarray): A list of colors.
-        top_k (int): Plot the first k bboxes only if set positive.
-        thickness (int): Thickness of lines.
-        show (bool): Whether to show the image.
-        win_name (str): The window name.
-        wait_time (int): Value of waitKey param.
-        out_file (str, optional): The filename to write the image.
-
-    Returns:
-        ndarray: The image with bboxes drawn on it.
-    """
-    img = imread(img)
-    img = np.ascontiguousarray(img)
-
-    if isinstance(bboxes, np.ndarray):
-        bboxes = [bboxes]
-    if not isinstance(colors, list):
-        colors = [colors for _ in range(len(bboxes))]
-    colors = [color_val(c) for c in colors]
-    assert len(bboxes) == len(colors)
-
-    for i, _bboxes in enumerate(bboxes):
-        _bboxes = _bboxes.astype(np.int32)
-        if top_k <= 0:
-            _top_k = _bboxes.shape[0]
-        else:
-            _top_k = min(top_k, _bboxes.shape[0])
-        for j in range(_top_k):
-            left_top = (_bboxes[j, 0], _bboxes[j, 1])
-            right_bottom = (_bboxes[j, 2], _bboxes[j, 3])
-            cv2.rectangle(img, left_top, right_bottom, colors[i], thickness=thickness)
-
-    if show:
-        imshow(img, win_name, wait_time)
-    if out_file is not None:
-        imwrite(img, out_file)
-    return img
 
 
 def imshow_det_bboxes(
@@ -132,7 +79,7 @@ def imshow_det_bboxes(
     assert bboxes.shape[0] == labels.shape[0]
     assert bboxes.shape[1] == 4 or bboxes.shape[1] == 5
     img = imread(img)
-    
+
     if score_thr > 0:
         assert bboxes.shape[1] == 5
         scores = bboxes[:, -1]
@@ -160,7 +107,7 @@ def imshow_det_bboxes(
             cv2.FONT_HERSHEY_TRIPLEX,
             font_scale,
             text_color,
-            4
+            4,
         )
 
     if show:
