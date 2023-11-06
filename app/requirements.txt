@@ -11,3 +11,5 @@ uvicorn==0.23.2
 python-multipart==0.0.6
 firebase_admin==6.2.0
 pytest
+qrcode==7.4.2
+neo4j==5.14.1
