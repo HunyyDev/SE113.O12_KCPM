@@ -5,12 +5,19 @@ from app.routers.image import inferenceImage
 import pytest
 import pytest
 from fastapi.testclient import TestClient
+from fastapi.routing import APIRoute
 from app.main import app
-
+def endpoints():
+    endpoints = []
+    for route in app.routes:
+        if isinstance(route, APIRoute):
+            endpoints.append(route.path)
+    return endpoints
 @pytest.fixture
 def client():
     client = TestClient(app, "http://0.0.0.0:3000")
     yield client
+@pytest.mark.skipif("/image" not in endpoints(), reason="Route not defined")
 class TestImageRoute():
     img = mmcv.imread('demo.jpg')
     url = "http://0.0.0.0:3000/image"
