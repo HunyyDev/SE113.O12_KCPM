@@ -41,7 +41,7 @@ jobs:
         cp libs/image.py /opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/mmcv/visualization/image.py
     - name: Test with pytest
       run: |
-        cd /home/runner/work/SE113.O12_KCPM/SE113.O12_KCPM
+        ls .
         pytest
       env:
         SUPABASE_URL: ${{secrets.SUPABASE_URL}}
