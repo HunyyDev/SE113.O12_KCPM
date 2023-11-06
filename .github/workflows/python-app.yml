@@ -35,14 +35,14 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Modified .conda mmcv item
+    - name: Modified mmcv image function
       run: |
         # copy image.py to mmcv location
         cp libs/image.py /opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/mmcv/visualization/image.py
     - name: Test with pytest
       run: |
+        cd /home/runner/work/SE113.O12_KCPM/SE113.O12_KCPM
         pytest
-      working-directory: /home/runner/work/SE113.O12_KCPM/SE113.O12_KCPM
       env:
         SUPABASE_URL: ${{secrets.SUPABASE_URL}}
         SUPABASE_KEY: ${{secrets.SUPABASE_KEY}}
