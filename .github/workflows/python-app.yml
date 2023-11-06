@@ -38,8 +38,7 @@ jobs:
     - name: Modified .conda mmcv item
       run: |
         # copy image.py to mmcv location
-        ls /home/runner/.local/lib
-        cp libs/image.py /home/runner/.local/lib/python3.8/site-packages/mmcv/visualization/image.py
+        cp libs/image.py opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/mmcv/visualization/image.py
     - name: Test with pytest
       run: |
         pytest
