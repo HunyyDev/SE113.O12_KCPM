@@ -20,7 +20,7 @@ from app import supabase
 from app.dependencies import get_current_user
 from app.routers.image import inferenceImage
 
-router = APIRouter(prefix="/video")
+router = APIRouter(prefix="/video", tags=["Video"])
 
 
 @router.post("/{artifactId}")
@@ -29,7 +29,7 @@ async def handleVideoRequest(
     file: UploadFile,
     background_tasks: BackgroundTasks,
     threshold: float = 0.3,
-    user=Depends(get_current_user),
+    _=Depends(get_current_user),
 ):
     if re.search("^video\/", file.content_type) is None:
         raise HTTPException(

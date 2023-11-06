@@ -1,13 +1,13 @@
-from fastapi import APIRouter, File, Response, WebSocket, WebSocketDisconnect
 import cv2
 import numpy as np
+
+from fastapi import APIRouter, File, Response, WebSocket, WebSocketDisconnect
 from app.constants import classNames, colors
 from app import detector
-
 from mmcv import imfrombytes
 from app.custom_mmcv.main import imshow_det_bboxes
 
-router = APIRouter(prefix="/image")
+router = APIRouter(prefix="/image", tags=["Image"])
 
 
 @router.post("")
