@@ -6,3 +6,4 @@ app/firebase_config.json
 demo
 **/*.mp4
 **/*.jpg
+.pytest_cache
