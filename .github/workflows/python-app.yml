@@ -25,6 +25,7 @@ jobs:
         python-version: "3.8"
     - name: Install dependencies
       run: |
+        apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
         pip install flake8 pytest
         pip install uvicorn
         pip install --force-reinstall httpcore==0.15
@@ -41,7 +42,6 @@ jobs:
         cp libs/image.py /opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/mmcv/visualization/image.py
     - name: Test with pytest
       run: |
-        ls .
         pytest
       env:
         SUPABASE_URL: ${{secrets.SUPABASE_URL}}
