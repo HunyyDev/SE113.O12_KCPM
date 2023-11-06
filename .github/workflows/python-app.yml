@@ -36,15 +36,14 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Start server
+    - name: Modified .conda mmcv item
       run: |
-        # build the server for testing API
-        uvicorn app.main:app --host 0.0.0.0 --port 3000
+        # copy image.py to mmcv location
+        cp libs\image.py .conda\Lib\site-packages\mmcv\visualization\image.py
+    - name: Test with pytest
+      run: |
+        pytest
       env:
         SUPABASE_URL: ${{secrets.SUPABASE_URL}}
         SUPABASE_KEY: ${{secrets.SUPABASE_KEY}}
         FIREBASE_CREDENTIALS: ${{secrets.FIREBASE_CREDENTIALS}}
-
-    - name: Test with pytest
-      run: |
-        pytest
