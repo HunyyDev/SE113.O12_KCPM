@@ -12,5 +12,7 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: '3.8'
-    - name: Add conda to system path
+    - name: install dependency
+      run: pip install -r app/requirements.txt
+    - name: Run test
       run: pytest
