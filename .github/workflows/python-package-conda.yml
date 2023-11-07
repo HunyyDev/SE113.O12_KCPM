@@ -17,5 +17,6 @@ jobs:
         pip install -r app/requirements.txt
         git lfs install
         git lfs fetch
+        git lfs pull
     - name: Run test
       run: pytest
