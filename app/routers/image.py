@@ -19,7 +19,7 @@ async def handleImageRequest(
     try:
         img = imfrombytes(file, cv2.IMREAD_COLOR)
     except:
-        return Response(content="Failed to read image!", status_code=400)
+        return Response(content="Failed to read image", status_code=400)
 
     if raw:
         bboxes, labels = inferenceImage(img, threshold, raw)
