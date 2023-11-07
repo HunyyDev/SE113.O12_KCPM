@@ -13,7 +13,7 @@ def get_current_user(
     try:
         payload = auth.verify_id_token(credentials.credentials)
         user_doc_ref = db.collection("user").document(payload["sub"]).get()
-        if user_doc_ref.exists:
+        if not user_doc_ref.exists:
             raise HTTPException(status_code=400, detail="User profile not found")
     except ExpiredIdTokenError as e:
         raise HTTPException(
