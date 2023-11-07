@@ -86,7 +86,7 @@ def acceptRequest(RequestId: str, user=Depends(get_current_user)):
 
 
 async def sendNotificationToInviter(inviterId: str, invitee):
-    pass
+    return HTTPException(status_code=501, detail="Not implemented yet")
 
 
 async def makeFriend(inviteeId: str, inviterId: str):
