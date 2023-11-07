@@ -34,7 +34,7 @@ if not firebase_admin._apps:
         )
     )
 else:
-    firebase_app = firebase_admin._apps
+    firebase_app = firebase_admin.get_app()
 db = firestore.client()
 
 # LOAD NEO4J DB

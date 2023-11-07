@@ -167,4 +167,4 @@ classNames = [
     "toothbrush",
 ]
 
-test_uid = "VAbtgG1IrWSOqoJgxe7u2yEqpIg2"
+deviceId = 'dvg7OhkORV6mYFlUuNKNaE:APA91bHp-SGj4uLyyI9zpEFGrQDrklonQff0bJjtQWhGrJ-tyd_1u5NZSenxEkJzDZ-lyYsZCvmIrZnwNeu9CetsuJNGAU0lkNePNngR-76ytR8ZLvqTOMyf5RHWexsxaPa9Rop05WMi'
