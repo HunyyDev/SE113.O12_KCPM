@@ -6,6 +6,7 @@ from app.constants import classNames, colors
 from app import detector
 from mmcv import imfrombytes
 from app.custom_mmcv.main import imshow_det_bboxes
+from app import logger
 
 router = APIRouter(prefix="/image", tags=["Image"])
 
@@ -23,7 +24,8 @@ async def handleImageRequest(
             return {"bboxes": bboxes.tolist(), "labels": labels.tolist()}
 
         img = inferenceImage(img, threshold, False)
-    except:
+    except Exception as e:
+        logger.error(e)
         return Response(content="Failed to read image", status_code=400)
 
     ret, jpeg = cv2.imencode(".jpg", img)
@@ -52,7 +54,6 @@ def inferenceImage(img, threshold: float, isRaw: bool = False):
         bboxes=bboxes,
         labels=labels,
         class_names=classNames,
-        show=False,
         colors=colors,
         score_thr=threshold,
     )
@@ -64,8 +65,13 @@ async def websocketEndpoint(websocket: WebSocket, threshold: float = 0.3):
     try:
         while True:
             data = await websocket.receive_bytes()
-            img = imfrombytes(data, cv2.IMREAD_COLOR)
-            bboxes, labels = inferenceImage(img, threshold, True)
+            try:
+                img = imfrombytes(data, cv2.IMREAD_COLOR)
+                bboxes, labels = inferenceImage(img, threshold, True)
+            except Exception as e:
+                logger.error(e)
+                bboxes, labels = [], []
+
             await websocket.send_json(
                 {"bboxes": bboxes.tolist(), "labels": labels.tolist()}
             )
