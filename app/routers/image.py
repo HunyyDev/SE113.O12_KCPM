@@ -58,22 +58,3 @@ def inferenceImage(img, threshold: float, isRaw: bool = False):
         score_thr=threshold,
     )
 
-
-@router.websocket("/")
-async def websocketEndpoint(websocket: WebSocket, threshold: float = 0.3):
-    await websocket.accept()
-    try:
-        while True:
-            data = await websocket.receive_bytes()
-            try:
-                img = imfrombytes(data, cv2.IMREAD_COLOR)
-                bboxes, labels = inferenceImage(img, threshold, True)
-            except Exception as e:
-                logger.error(e)
-                bboxes, labels = [], []
-
-            await websocket.send_json(
-                {"bboxes": bboxes.tolist(), "labels": labels.tolist()}
-            )
-    except WebSocketDisconnect:
-        pass
