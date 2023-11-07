@@ -8,7 +8,7 @@ import site
 import shutil
 from fastapi.routing import APIRoute
 from app import firebase_app
-from firebase_admin import firestore
+import requests
 def get_site_packages():
     # Get the list of directories 
     site_packages_dirs = site.getsitepackages()
@@ -27,23 +27,25 @@ def endpoints():
     for route in app.routes:
         if isinstance(route, APIRoute):
             endpoints.append(route.path)
-    return endpoints
-@pytest.fixture(autouse=True)
-def modify_mmcv_image():
-    site_packages_path = get_site_packages()
-    dirList = os.listdir(site_packages_path)
-    if "mmcv" in dirList:
-        shutil.copyfile("libs/image.py", os.path.join(site_packages_path, "mmcv/visualization/image.py"))
-    else:
-        pytest.exit('Error: Cannot modified mmcv.Image')
-        
+    return endpoints 
 @pytest.fixture
 def client():
     client = TestClient(app, "http://0.0.0.0:3000")
     yield client
 @pytest.fixture
 def token():
-    token = ""
+    url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyArSoK9Wx9Hpe1R9ZywuLEIMVjCtHjO8Os"
+
+    payload = json.dumps({
+    "email": "test@gmail.com",
+    "password": "testing",
+    "returnSecureToken": True
+    })
+    headers = {
+    'Content-Type': 'application/json'
+    }
+    response = requests.request("POST", url, headers=headers, data=payload)
+    token = response.json()["idToken"]
     yield token
 class TestFireBaseAPI():
     def test_get_me(self, client, token):

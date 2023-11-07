@@ -7,7 +7,6 @@ from app import db
 from enum import Enum
 from app.graphdb.main import insert2PersonAndSetFriend
 
-
 router = APIRouter(prefix="/friend_request", tags=["friend_request"])
 
 
