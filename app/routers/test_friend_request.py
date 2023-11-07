@@ -31,6 +31,3 @@ def token_invitee():
     response = requests.request("POST", url, headers=headers, data=payload)
     token = response.json()["idToken"]
     yield token
-class testFriendRequest():
-    def test_get_qr():
-        
