@@ -13,27 +13,6 @@ from .color import Color, color_val
 ColorType = Union[Color, str, tuple, int, np.ndarray]
 
 
-def imshow(img: Union[str, np.ndarray], win_name: str = "", wait_time: int = 0):
-    """Show an image.
-
-    Args:
-        img (str or ndarray): The image to be displayed.
-        win_name (str): The window name.
-        wait_time (int): Value of waitKey param.
-    """
-    cv2.imshow(win_name, imread(img))
-    if wait_time == 0:  # prevent from hanging if windows was closed
-        while True:
-            ret = cv2.waitKey(1)
-
-            closed = cv2.getWindowProperty(win_name, cv2.WND_PROP_VISIBLE) < 1
-            # if user closed window or if some key pressed
-            if closed or ret != -1:
-                break
-    else:
-        ret = cv2.waitKey(wait_time)
-
-
 def imshow_det_bboxes(
     img: Union[str, np.ndarray],
     bboxes: np.ndarray,
@@ -44,9 +23,6 @@ def imshow_det_bboxes(
     text_color: ColorType = "green",
     thickness: int = 1,
     font_scale: float = 1,
-    show: bool = True,
-    win_name: str = "",
-    wait_time: int = 0,
     out_file: Optional[str] = None,
     colors: np.ndarray = None,
 ):
@@ -65,9 +41,6 @@ def imshow_det_bboxes(
             of texts.
         thickness (int): Thickness of lines.
         font_scale (float): Font scales of texts.
-        show (bool): Whether to show the image.
-        win_name (str): The window name.
-        wait_time (int): Value of waitKey param.
         out_file (str or None): The filename to write the image.
         colors (array of tuple RGB int): the color of bbox and label of each class
 
@@ -110,8 +83,6 @@ def imshow_det_bboxes(
             4,
         )
 
-    if show:
-        imshow(img, win_name, wait_time)
     if out_file is not None:
         imwrite(img, out_file)
     return img
