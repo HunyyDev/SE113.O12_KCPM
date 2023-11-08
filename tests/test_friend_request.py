@@ -74,7 +74,7 @@ def invitee():
     yield invitee
 class TestFriendRequest():
     @pytest.mark.skipif("/friend_request" not in endpoints(),reason="Route not defined")
-    def test_post_friend(self, firebase_app, client, inviter, invitee):
+    def test_post_friend(self, client, inviter, invitee):
         # Call the firebase database
         friend_request_ref = db.collection('friend_request')
         # Remove all the friend_request use for testing in the past
