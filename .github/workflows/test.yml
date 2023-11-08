@@ -18,7 +18,6 @@ jobs:
           python-version: "3.8"
       - name: install dependency
         run: |
-          git lfs checkout
           pip install -r app/requirements.txt
       - name: Run test
         run: pytest

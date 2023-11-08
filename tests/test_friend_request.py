@@ -3,13 +3,13 @@ import pytest
 import json 
 import cv2
 import mmcv
-import firebase_admin
 import requests
 from fastapi.testclient import TestClient
 from app.main import app
 from app import db
 from app.constants import deviceId
 from fastapi.routing import APIRoute
+from app import db
 from google.cloud.firestore_v1.base_query import FieldFilter
 def endpoints():
     endpoints = []

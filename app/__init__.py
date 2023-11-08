@@ -11,8 +11,8 @@ from firebase_admin import firestore
 from neo4j import GraphDatabase
 
 
-logger = logging.getLogger("uvicorn")
-logger.setLevel(logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 load_dotenv()
