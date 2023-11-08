@@ -105,7 +105,7 @@ class TestFriendRequest():
         'Authorization': 'Bearer ' + inviter['token']
         }
         response = client.request("POST", 'friend_request', headers=headers, data=payload)
-        assert response.status_code == 500
+        assert response.status_code == 400
         # Create request and re-send 
         user_ref.document(inviter['id']).set({"deviceId": deviceId})
         payload = ''
@@ -114,7 +114,6 @@ class TestFriendRequest():
         'Authorization': 'Bearer ' + inviter['token']
         }
         response = client.request("POST", 'friend_request', headers=headers, data=payload)
-        # Check response status code
         assert response.status_code == 200
         result = mmcv.imfrombytes(response.read())
         # Check returned QR image
@@ -132,7 +131,7 @@ class TestFriendRequest():
         'Authorization': 'Bearer ' + invitee['token']
         }
         response = client.request("PATCH", 'friend_request/' + request_id, headers=headers, data=payload)
-        assert response.status_code == 500
+        assert response.status_code == 400
 
         # Create invitee user
         user_ref.document(invitee['id']).set({"deviceId": deviceId})

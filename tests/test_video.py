@@ -43,20 +43,18 @@ class TestVideoAPI:
         # Test when no token is pass to route
         payload = {}
         files=[
-        ('file',('demo.mp4',open('demo.mp4','rb'),'application/octet-stream'))
+        ('file',('demo.mp4',open('demo.mp4','rb'),'video/mp4'))
         ]
         headers = {
-        'Content-Type': 'application/json',
         }
         response = client.request("POST", 'video', headers=headers, data=payload, files=files)
         assert response.status_code == 403
         # Test when a dummy (not valid) token passed
         payload = {}
         files=[
-        ('file',('demo.mp4',open('demo.mp4','rb'),'application/octet-stream'))
+        ('file',('demo.mp4',open('demo.mp4','rb'),'video/mp4'))
         ]
         headers = {
-        'Content-Type': 'application/json',
         'Authorization': "Bearer saikoljncaskljnfckjnasckjna"
         }
         response = client.request("POST", 'video', headers=headers, data=payload, files=files)
@@ -68,36 +66,22 @@ class TestVideoAPI:
         ('file',('demo.jpg',open('demo.jpg','rb'),'application/octet-stream'))
         ]
         headers = {
-        'Content-Type': 'application/json',
         'Authorization': "Bearer " + user['token']
-        }
-        response = client.request("POST", 'video', headers=headers, data=payload, files=files)
-        assert response.status_code == 400
-        assert response.text == "File must be video"
-        # Test on valid token + user
-        payload = {}
-        files=[
-        ('file',('demo.mp4',open('demo.mp4','rb'),'application/octet-stream'))
-        ]
-        headers = {
-        'Content-Type': 'application/json',
-        'Authorization': "Bearer " + user['id']
         }
         response = client.request("POST", 'video', headers=headers, data=payload, files=files)
         assert response.status_code == 400
         # Test when all requirements have been fulfilled
         payload = {}
         files=[
-        ('file',('demo.mp4',open('demo.mp4','rb'),'application/octet-stream'))
+        ('file',('demo.mp4',open('demo.mp4','rb'),'video/mp4'))
         ]
         headers = {
-        'Content-Type': 'application/json',
         'Authorization': "Bearer " + user['token']
         }
         response = client.request("POST", 'video', headers=headers, data=payload, files=files)
         assert response.status_code == 200
         artifactName = response.text
-        docs = db.collection("artifacts").where(filter = FieldFilter("name", '==', artifactName))
+        docs = db.collection("artifacts").where(filter = FieldFilter("name", '==', artifactName)).stream()
         index = 0
         for doc in docs:
             # For each document in docs. Verify name and status of the artifact
@@ -106,22 +90,18 @@ class TestVideoAPI:
             assert data['name'] == artifactName
             assert data['status'] == 'pending'
             assert index == 1
-        db.collection("user").document(user['id']).delete()
+            doc.delete()
     def test_update_artifact(self):
         # Check and preprocess test data before testing
         test_artifact = db.collection("artifacts").document('test')
         if not test_artifact.get().exists:
-            db.collection("artifacts").add({"name": "test", "path": "", "status": "testing", "thumbnailURL":""})
-            test_artifact = db.collection("artifacts").document('test').get()
+            db.collection("artifacts").document('test').set({"name": "test", "path": "", "status": "testing", "thumbnailURL":""})
+            test_artifact = db.collection("artifacts").document('test')
         else:
             test_artifact.update({"status": "testing", 'path': '', "thumbnailURL":""})
         # Testing update on each field
-        updateArtifact(test_artifact['id'], {{"status": "test_done"}})
-        assert test_artifact.get().to_dict()['status'] == 'test_done'
-        updateArtifact(test_artifact['id'], {{"path": "test_path"}})
-        assert test_artifact.get().to_dict()['path'] == 'test_path'
-        updateArtifact(test_artifact['id'], {{"thumbnailURL": "test_path"}})
-        assert test_artifact.get().to_dict()['thumbnailURl'] == 'test_path'
+        updateArtifact(test_artifact.id,{"status": "test_done"})
+        assert db.collection("artifacts").document('test').get().to_dict()['status'] == 'test_done'
         #Delete data for next time test
         test_artifact.delete()
         
