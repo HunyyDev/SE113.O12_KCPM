@@ -4,8 +4,6 @@ from fastapi.responses import RedirectResponse
 from app.graphdb.main import insert2PersonAndSetFriend, deleteFriend
 from .routers import image, video, friend_request, me
 
-import uvicorn
-
 app = FastAPI()
 
 app.include_router(image.router)
@@ -24,7 +22,3 @@ def hello():
 async def test():
     await insert2PersonAndSetFriend("1", "2")
     await deleteFriend("1", "2")
-
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
