@@ -3,14 +3,12 @@ import pytest
 import json 
 import cv2
 import mmcv
-import firebase_admin
 import requests
 from fastapi.testclient import TestClient
-from firebase_admin import credentials
 from app.main import app
+from app import db
 from app.constants import deviceId
 from fastapi.routing import APIRoute
-from firebase_admin import firestore
 from app import db
 from google.cloud.firestore_v1.base_query import FieldFilter
 def endpoints():
@@ -41,7 +39,7 @@ def client():
     yield client
 @pytest.fixture
 def inviter():
-    url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyArSoK9Wx9Hpe1R9ZywuLEIMVjCtHjO8Os"
+    url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + os.environ.get("FIREBASE_API_KEY")
 
     payload = json.dumps({
     "email": "test@gmail.com",
@@ -58,7 +56,7 @@ def inviter():
     
 @pytest.fixture()
 def invitee():
-    url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyArSoK9Wx9Hpe1R9ZywuLEIMVjCtHjO8Os"
+    url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + os.environ.get("FIREBASE_API_KEY")
 
     payload = json.dumps({
     "email": "test2@gmail.com",
@@ -107,7 +105,7 @@ class TestFriendRequest():
         'Authorization': 'Bearer ' + inviter['token']
         }
         response = client.request("POST", 'friend_request', headers=headers, data=payload)
-        assert response.status_code == 500
+        assert response.status_code == 400
         # Create request and re-send 
         user_ref.document(inviter['id']).set({"deviceId": deviceId})
         payload = ''
@@ -116,7 +114,6 @@ class TestFriendRequest():
         'Authorization': 'Bearer ' + inviter['token']
         }
         response = client.request("POST", 'friend_request', headers=headers, data=payload)
-        # Check response status code
         assert response.status_code == 200
         result = mmcv.imfrombytes(response.read())
         # Check returned QR image
@@ -134,7 +131,7 @@ class TestFriendRequest():
         'Authorization': 'Bearer ' + invitee['token']
         }
         response = client.request("PATCH", 'friend_request/' + request_id, headers=headers, data=payload)
-        assert response.status_code == 500
+        assert response.status_code == 400
 
         # Create invitee user
         user_ref.document(invitee['id']).set({"deviceId": deviceId})
