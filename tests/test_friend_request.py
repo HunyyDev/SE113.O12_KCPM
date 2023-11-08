@@ -6,11 +6,10 @@ import mmcv
 import firebase_admin
 import requests
 from fastapi.testclient import TestClient
-from firebase_admin import credentials
 from app.main import app
+from app import db
 from app.constants import deviceId
 from fastapi.routing import APIRoute
-from firebase_admin import firestore
 from google.cloud.firestore_v1.base_query import FieldFilter
 def endpoints():
     endpoints = []
@@ -40,7 +39,7 @@ def client():
     yield client
 @pytest.fixture
 def inviter():
-    url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyArSoK9Wx9Hpe1R9ZywuLEIMVjCtHjO8Os"
+    url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + os.environ.get("FIREBASE_API_KEY")
 
     payload = json.dumps({
     "email": "test@gmail.com",
@@ -54,20 +53,10 @@ def inviter():
     data = response.json()
     inviter = {"id": data['localId'], "token": data["idToken"]}
     yield inviter
-@pytest.fixture()
-def firebase_app():
-    if "test" in firebase_admin._apps:
-        firebase_app = firebase_admin.get_app('test')
-        yield firebase_app
-    else:
-        firebase_app = firebase_admin.initialize_app(        credential= credentials.Certificate(
-            json.loads(os.environ.get("FIREBASE_CREDENTIALS"))
-        ),name='test')
-        yield firebase_app
     
 @pytest.fixture()
 def invitee():
-    url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyArSoK9Wx9Hpe1R9ZywuLEIMVjCtHjO8Os"
+    url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + os.environ.get("FIREBASE_API_KEY")
 
     payload = json.dumps({
     "email": "test2@gmail.com",
@@ -83,9 +72,8 @@ def invitee():
     yield invitee
 class TestFriendRequest():
     @pytest.mark.skipif("/friend_request" not in endpoints(),reason="Route not defined")
-    def test_post_friend(self, firebase_app, client, inviter, invitee):
+    def test_post_friend(self, client, inviter, invitee):
         # Call the firebase database
-        db = firestore.client(app=firebase_app)
         friend_request_ref = db.collection('friend_request')
         # Remove all the friend_request use for testing in the past
         query = friend_request_ref.where(filter=FieldFilter("inviter", "==", inviter['id']))
