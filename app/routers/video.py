@@ -153,10 +153,11 @@ async def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
 
 
 def updateArtifact(artifactId: str, body):
-    artifact_snapshot = db.collection("artifacts").document(artifactId).get()
-    if not artifact_snapshot.exists:
-        artifact_snapshot.update(body)
-    sendMessage(artifactId)
+    artifact_ref = db.collection("artifacts").document(artifactId)
+    artifact_snapshot = artifact_ref.get()
+    if artifact_snapshot.exists:
+        artifact_ref.update(body)
+    # sendMessage(artifactId)
 
 
 # This function cannot be automation test because the requirement of another device to receive notification
