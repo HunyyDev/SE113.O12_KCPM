@@ -20,10 +20,9 @@ async def handleImageRequest(
     try:
         img = imfrombytes(file, cv2.IMREAD_COLOR)
         if raw:
-            bboxes, labels = inferenceImage(img, threshold, True)
+            bboxes, labels = inferenceImage(img, threshold, raw)
             return {"bboxes": bboxes.tolist(), "labels": labels.tolist()}
-
-        img = inferenceImage(img, threshold, False)
+        img = inferenceImage(img, threshold, raw)
     except Exception as e:
         logger.error(e)
         return Response(content="Failed to read image", status_code=400)
@@ -37,7 +36,7 @@ async def handleImageRequest(
     return Response(content=jpeg_bytes, media_type="image/jpeg")
 
 
-def inferenceImage(img, threshold: float, isRaw: bool = False):
+def inferenceImage(img, threshold: float, isRaw: bool):
     bboxes, labels, _ = detector(img)
     if isRaw:
         removeIndexs = []

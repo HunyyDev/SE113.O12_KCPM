@@ -62,50 +62,50 @@ async def handleVideoRequest(
 def now():
     return round(time.time() * 1000)
 
+def createThumbnail(thumbnail, inputDir):
+    thumbnail = cv2.resize(
+        src=thumbnail, dsize=(160, 160), interpolation=cv2.INTER_AREA
+    )
+    cv2.imwrite(os.path.join(inputDir, "thumbnail.jpg"), thumbnail)
+def inference_frame(inputDir, threshold:float=0.3):
+    cap = cv2.VideoCapture(
+        filename=os.path.join(inputDir, "input.mp4"), apiPreference=cv2.CAP_FFMPEG
+    )
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    size = (
+        int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
+        int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),
+    )
+    result = cv2.VideoWriter(
+        filename=os.path.join(inputDir, "out.mp4"),
+        fourcc=cv2.VideoWriter_fourcc(*"mp4v"),
+        fps=fps,
+        frameSize=size,
+    )
 
+    isFirstFrame = True
+    thumbnail = None
+    while cap.isOpened():
+        res, frame = cap.read()
+        if isFirstFrame:
+            isFirstFrame = False
+            thumbnail = frame
+
+        if res == False:
+            break
+
+        resFram = inferenceImage(frame, threshold, False)
+        result.write(resFram)
+    cap.release()
+    result.release()
+    del cap
+    del result
+    return thumbnail
 async def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
     try:
         Process(updateArtifact(artifactId, {"status": "processing"})).start()
-        cap = cv2.VideoCapture(
-            filename=os.path.join(inputDir, "input.mp4"), apiPreference=cv2.CAP_FFMPEG
-        )
-        fps = cap.get(cv2.CAP_PROP_FPS)
-        size = (
-            int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
-            int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),
-        )
-        result = cv2.VideoWriter(
-            filename=os.path.join(inputDir, "out.mp4"),
-            fourcc=cv2.VideoWriter_fourcc(*"mp4v"),
-            fps=fps,
-            frameSize=size,
-        )
-
-        isFirstFrame = True
-        thumbnail = None
-        while cap.isOpened():
-            res, frame = cap.read()
-            if isFirstFrame:
-                isFirstFrame = False
-                thumbnail = frame
-
-            if res == False:
-                break
-
-            resFram = inferenceImage(frame, threshold)
-            result.write(resFram)
-
-        cap.release()
-        result.release()
-
-        def createThumbnail(thumbnail):
-            thumbnail = cv2.resize(
-                src=thumbnail, dsize=(160, 160), interpolation=cv2.INTER_AREA
-            )
-            cv2.imwrite(os.path.join(inputDir, "thumbnail.jpg"), thumbnail)
-
-        createThumbnail(thumbnail)
-
+        thumbnail = inference_frame(inputDir, threshold=threshold)
+        createThumbnail(thumbnail, inputDir)
         async def uploadVideo():
             async with aiofiles.open(os.path.join(inputDir, "out.mp4"), "rb") as f:
                 supabase.storage.from_("video").upload(
@@ -149,7 +149,10 @@ async def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
             )
         ).start()
     finally:
-        shutil.rmtree(inputDir)
+        try:
+            shutil.rmtree(inputDir)
+        except PermissionError as e:
+            print(e)
 
 
 def updateArtifact(artifactId: str, body):

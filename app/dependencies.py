@@ -4,7 +4,6 @@ from firebase_admin import auth
 from firebase_admin.auth import ExpiredIdTokenError, InvalidIdTokenError
 from app import logger
 from . import db
-
 security = HTTPBearer()
 
 

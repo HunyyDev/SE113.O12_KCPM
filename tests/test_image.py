@@ -24,7 +24,7 @@ class TestImageRoute():
     def test_inferenceImage(self):
         bboxes, labels = inferenceImage(mmcv.imread('demo.jpg'), 0.3, True)
         assert len(bboxes.tolist()) > 0 and len(labels.tolist()) > 0 and len(bboxes.tolist()) == len(labels.tolist())
-        result = inferenceImage(self.img, 0.3)
+        result = inferenceImage(self.img, 0.3, False)
         assert type(result) is np.ndarray and result.shape == self.img.shape
     def test_ImageAPI(self, client):
         payload = {}

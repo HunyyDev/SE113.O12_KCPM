@@ -12,11 +12,6 @@ app.include_router(friend_request.router)
 app.include_router(me.router)
 
 
-@app.get("/", include_in_schema=False)
-def hello():
-    response = RedirectResponse(url="/docs")
-    return response
-
 
 @app.get("/test")
 async def test():

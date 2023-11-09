@@ -17,7 +17,7 @@ def imshow_det_bboxes(
     img: Union[str, np.ndarray],
     bboxes: np.ndarray,
     labels: np.ndarray,
-    class_names: List[str] = None,
+    class_names: List[str] = [],
     score_thr: float = 0,
     bbox_color: ColorType = "green",
     text_color: ColorType = "green",
@@ -67,7 +67,7 @@ def imshow_det_bboxes(
         bbox_int = bbox.astype(np.int32)
         left_top = (bbox_int[0], bbox_int[1])
         right_bottom = (bbox_int[2], bbox_int[3])
-        if colors is not None:
+        if colors is not None and len(colors) > 0:
             bbox_color = text_color = color_val(colors[label])
         cv2.rectangle(img, left_top, right_bottom, bbox_color, thickness=thickness)
         label_text = class_names[label] if class_names is not None else f"cls {label}"
