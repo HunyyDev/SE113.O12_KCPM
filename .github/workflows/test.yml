@@ -18,7 +18,7 @@ jobs:
       - name: install dependency
         run: |
           pip install -r app/requirements.txt
-          apt-get install wget libgl1 ffmpeg redis -y
+          sudo apt-get install wget libgl1 ffmpeg redis -y
       - name: download model
         run: |
           wget -O ./model/end2end.onnx ${MODEL_URL}
