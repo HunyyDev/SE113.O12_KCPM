@@ -56,4 +56,3 @@ def inferenceImage(img, threshold: float, isRaw: bool):
         colors=colors,
         score_thr=threshold,
     )
-

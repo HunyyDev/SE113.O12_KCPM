@@ -1,4 +1,4 @@
-from app import driver, logger
+from . import driver, logger
 
 
 def match_person_nodes(tx, uid1: str, uid2: str):

@@ -1,6 +1,5 @@
 from fastapi import FastAPI
-
-from app.graphdb.main import insert2PersonAndSetFriend, deleteFriend
+from .graphdb.main import insert2PersonAndSetFriend, deleteFriend
 from .routers import image, video, friend_request, me
 
 app = FastAPI()

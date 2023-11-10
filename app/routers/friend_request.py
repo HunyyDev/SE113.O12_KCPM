@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from app.dependencies import get_current_user
 from app import db, logger
 from enum import Enum
+
 from app.graphdb.main import insert2PersonAndSetFriend
 
 router = APIRouter(prefix="/friend_request", tags=["friend_request"])
