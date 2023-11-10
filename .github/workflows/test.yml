@@ -22,6 +22,8 @@ jobs:
       - name: download model
         run: |
           wget -O ./model/end2end.onnx $MODEL_URL
+        env:
+          MODEL_URL: ${{secrets.MODEL_URL}}
       - name: Run test
         run: pytest
         env:
@@ -34,4 +36,3 @@ jobs:
           AURA_INSTANCEID: ${{secrets.AURA_INSTANCEID}}
           AURA_INSTANCENAME: ${{secrets.AURA_INSTANCENAME}}
           FIREBASE_API_KEY: ${{secrets.FIREBASE_API_KEY}}
-          MODEL_URL: ${{secrets.MODEL_URL}}
