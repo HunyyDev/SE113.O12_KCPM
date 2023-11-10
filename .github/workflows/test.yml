@@ -16,8 +16,7 @@ jobs:
         with:
           python-version: "3.8"
           cache: "pip"
-      - run: |
-          pip install -r app/requirements.txt
+      - run: pip install -r app/requirements.txt
       - name: install apt dependencies
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
