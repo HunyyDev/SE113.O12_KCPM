@@ -5,9 +5,7 @@ import logging
 from dotenv import load_dotenv
 from mmdeploy_runtime import Detector
 from supabase import create_client, Client
-import firebase_admin
-from firebase_admin import credentials, initialize_app
-from firebase_admin import firestore
+from firebase_admin import credentials, initialize_app, firestore
 from neo4j import GraphDatabase
 
 

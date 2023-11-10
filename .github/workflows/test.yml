@@ -9,9 +9,8 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: nschloe/action-checkout-with-lfs-cache@v1
+      - uses: actions/checkout@v4
       - name: Set up Python 3.8
         uses: actions/setup-python@v3
         with:
@@ -19,6 +18,10 @@ jobs:
       - name: install dependency
         run: |
           pip install -r app/requirements.txt
+          apt-get install wget libgl1 ffmpeg redis -y
+      - name: download model
+        run: |
+          wget -O ./model/end2end.onnx ${MODEL_URL}
       - name: Run test
         run: pytest
         env:
@@ -31,3 +34,4 @@ jobs:
           AURA_INSTANCEID: ${{secrets.AURA_INSTANCEID}}
           AURA_INSTANCENAME: ${{secrets.AURA_INSTANCENAME}}
           FIREBASE_API_KEY: ${{secrets.FIREBASE_API_KEY}}
+          MODEL_URL: ${{secrets.MODEL_URL}}
