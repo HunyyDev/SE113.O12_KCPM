@@ -21,6 +21,7 @@ from app import supabase
 from app.dependencies import get_current_user
 from app.routers.image import inferenceImage
 from google.cloud.firestore_v1.base_query import FieldFilter
+from app import logger
 
 router = APIRouter(prefix="/video", tags=["Video"])
 
@@ -54,20 +55,22 @@ async def handleVideoRequest(
         background_tasks.add_task(inferenceVideo, artifact_ref.id, id, threshold)
         return id + ".mp4"
     except ValueError as err:
-        print(err)
-        print("Error processing video")
+        logger.error(err)
         shutil.rmtree(id)
 
 
 def now():
     return round(time.time() * 1000)
 
+
 def createThumbnail(thumbnail, inputDir):
     thumbnail = cv2.resize(
         src=thumbnail, dsize=(160, 160), interpolation=cv2.INTER_AREA
     )
     cv2.imwrite(os.path.join(inputDir, "thumbnail.jpg"), thumbnail)
-def inference_frame(inputDir, threshold:float=0.3):
+
+
+def inference_frame(inputDir, threshold: float = 0.3):
     cap = cv2.VideoCapture(
         filename=os.path.join(inputDir, "input.mp4"), apiPreference=cv2.CAP_FFMPEG
     )
@@ -101,11 +104,14 @@ def inference_frame(inputDir, threshold:float=0.3):
     del cap
     del result
     return thumbnail
+
+
 async def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
     try:
         Process(updateArtifact(artifactId, {"status": "processing"})).start()
         thumbnail = inference_frame(inputDir, threshold=threshold)
         createThumbnail(thumbnail, inputDir)
+
         async def uploadVideo():
             async with aiofiles.open(os.path.join(inputDir, "out.mp4"), "rb") as f:
                 supabase.storage.from_("video").upload(
