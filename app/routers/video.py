@@ -1,9 +1,5 @@
-import asyncio
 import os
-import re
 import shutil
-import time
-import aiofiles
 import cv2
 
 from multiprocessing import Process
@@ -11,68 +7,89 @@ from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
-    UploadFile,
-    BackgroundTasks,
+    Response,
     status,
 )
 from firebase_admin import messaging
 from app import db
-from app import supabase
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, save_upload_video
 from app.routers.image import inferenceImage
 from google.cloud.firestore_v1.base_query import FieldFilter
 from app import logger
+from ..storage.main import upload
 
 router = APIRouter(prefix="/video", tags=["Video"])
 
 
+class ArtifactStatus:
+    PENDING = "pending"
+    PROCESSING = "processing"
+    SUCCESS = "success"
+    FAIL = "fail"
+
+
 @router.post("")
 async def handleVideoRequest(
-    file: UploadFile,
-    background_tasks: BackgroundTasks,
+    current_user=Depends(get_current_user),
+    id: str = Depends(save_upload_video),
     threshold: float = 0.3,
-    user=Depends(get_current_user),
 ):
-    if re.search("^video\/", file.content_type) is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="File must be video",
-        )
-
     try:
-        if user["sub"] is None:
-            return HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="User not found"
-            )
-        id = str(now())
-        _, artifact_ref = db.collection("artifacts").add(
-            {"name": id + ".mp4", "status": "pending"}
-        )
-        os.mkdir(id)
-        async with aiofiles.open(os.path.join(id, "input.mp4"), "wb") as out_file:
-            while content := await file.read(1024):
-                await out_file.write(content)
-        background_tasks.add_task(inferenceVideo, artifact_ref.id, id, threshold)
-        return id + ".mp4"
-    except ValueError as err:
+        setArtifact(id, {"user_id": current_user["sub"]})
+        Process(target=inferenceVideo, args=(id, threshold)).start()
+        return Response(status_code=status.HTTP_200_OK)
+    except Exception as err:
         logger.error(err)
         shutil.rmtree(id)
+        return HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=err
+        )
 
 
-def now():
-    return round(time.time() * 1000)
+async def inferenceVideo(id: str, threshold: float):
+    setArtifact(id, {"name": id + ".mp4", "status": ArtifactStatus.PENDING})
+    try:
+        setArtifact(id, {"status": ArtifactStatus.PROCESSING})
+        firstFrame = inference_each_frame(id, threshold=threshold)
+        createThumbnail(firstFrame, id)
+
+        video_url = await upload(f"{id}/result_video", f"{id}/out.mp4", "video/mp4")
+        thumbnail_url = await upload(
+            f"{id}/result_thumbnail", f"{id}/thumbnail.jpg", "image/jpeg"
+        )
+
+        setArtifact(
+            id,
+            {
+                "status": ArtifactStatus.SUCCESS,
+                "path": video_url,
+                "thumbnailURL": thumbnail_url,
+            },
+        )
+    except Exception as err:
+        logger.error(err)
+        setArtifact(id, {"status": ArtifactStatus.FAIL, "error": err})
+    finally:
+        try:
+            shutil.rmtree(id)
+        except PermissionError as e:
+            print(e)
 
 
-def createThumbnail(thumbnail, inputDir):
-    thumbnail = cv2.resize(
-        src=thumbnail, dsize=(160, 160), interpolation=cv2.INTER_AREA
-    )
-    cv2.imwrite(os.path.join(inputDir, "thumbnail.jpg"), thumbnail)
+def inference_each_frame(id, threshold: float = 0.3):
+    """
+    This function is used to inference each frame of video
+    The result will be saved in out.mp4
 
+    Args:
+        id (str): The id of the video
+        threshold (float, optional): The threshold of the model. Defaults to 0.3.
 
-def inference_frame(inputDir, threshold: float = 0.3):
+    Returns:
+        firstFrame: The first frame of the video
+    """
     cap = cv2.VideoCapture(
-        filename=os.path.join(inputDir, "input.mp4"), apiPreference=cv2.CAP_FFMPEG
+        filename=os.path.join(id, "input.mp4"), apiPreference=cv2.CAP_FFMPEG
     )
     fps = cap.get(cv2.CAP_PROP_FPS)
     size = (
@@ -80,93 +97,46 @@ def inference_frame(inputDir, threshold: float = 0.3):
         int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),
     )
     result = cv2.VideoWriter(
-        filename=os.path.join(inputDir, "out.mp4"),
+        filename=os.path.join(id, "out.mp4"),
         fourcc=cv2.VideoWriter_fourcc(*"mp4v"),
         fps=fps,
         frameSize=size,
     )
 
-    isFirstFrame = True
-    thumbnail = None
+    firstFrame = None
     while cap.isOpened():
         res, frame = cap.read()
-        if isFirstFrame:
-            isFirstFrame = False
-            thumbnail = frame
+        if firstFrame is None:
+            firstFrame = frame
 
         if res == False:
             break
 
         resFram = inferenceImage(frame, threshold, False)
         result.write(resFram)
+
     cap.release()
     result.release()
     del cap
     del result
-    return thumbnail
+
+    return firstFrame
 
 
-async def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
-    try:
-        Process(updateArtifact(artifactId, {"status": "processing"})).start()
-        thumbnail = inference_frame(inputDir, threshold=threshold)
-        createThumbnail(thumbnail, inputDir)
-
-        async def uploadVideo():
-            async with aiofiles.open(os.path.join(inputDir, "out.mp4"), "rb") as f:
-                supabase.storage.from_("video").upload(
-                    inputDir + ".mp4", await f.read(), {"content-type": "video/mp4"}
-                )
-
-        async def uploadThumbnail():
-            async with aiofiles.open(
-                os.path.join(inputDir, "thumbnail.jpg"), "rb"
-            ) as f:
-                supabase.storage.from_("thumbnail").upload(
-                    inputDir + ".jpg", await f.read(), {"content-type": "image/jpeg"}
-                )
-
-        try:
-            n = now()
-            _, _ = await asyncio.gather(uploadVideo(), uploadThumbnail())
-            print(now() - n)
-        except Exception as e:
-            print(e)
-
-        updateArtifact(
-            artifactId,
-            {
-                "status": "success",
-                "path": "https://hdfxssmjuydwfwarxnfe.supabase.co/storage/v1/object/public/video/"
-                + inputDir
-                + ".mp4",
-                "thumbnailURL": "https://hdfxssmjuydwfwarxnfe.supabase.co/storage/v1/object/public/thumbnail/"
-                + inputDir
-                + ".jpg",
-            },
-        )
-    except:
-        Process(
-            updateArtifact(
-                artifactId,
-                {
-                    "status": "fail",
-                },
-            )
-        ).start()
-    finally:
-        try:
-            shutil.rmtree(inputDir)
-        except PermissionError as e:
-            print(e)
+def createThumbnail(img, inputDir):
+    """
+    This function is used to create thumbnail of the video
+    The thumbnail will be saved in thumbnail.jpg
+    """
+    thumbnail = cv2.resize(src=img, dsize=(160, 160), interpolation=cv2.INTER_AREA)
+    cv2.imwrite(os.path.join(inputDir, "thumbnail.jpg"), thumbnail)
 
 
-def updateArtifact(artifactId: str, body):
-    artifact_ref = db.collection("artifacts").document(artifactId)
-    artifact_snapshot = artifact_ref.get()
-    if artifact_snapshot.exists:
-        artifact_ref.update(body)
-    # sendMessage(artifactId)
+def setArtifact(artifactId: str, body):
+    """
+    This function is used to update or create artifact if not exist in firestore
+    """
+    return db.collection("artifacts").document(artifactId).set(body, merge=True)
 
 
 # This function cannot be automation test because the requirement of another device to receive notification
