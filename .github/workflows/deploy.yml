@@ -2,20 +2,30 @@ name: Deploy
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows:
-      - "Test"
-    types:
-      - completed
+  push:
+    branches:
+      - DA1
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: nschloe/action-checkout-with-lfs-cache@v1
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.8 and install dependencies
+        uses: actions/setup-python@v3
         with:
-          fetch-depth: 0
-      - name: Push to hub
+          python-version: "3.8"
+          cache: "pip"
+      - run: pip install -r app/requirements.txt
+
+      - name: install apt dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: wget
+
+      - name: download model
+        run: |
+          wget -P ./model $MODEL_URL
         env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push https://phuochungus:$HF_TOKEN@huggingface.co/spaces/phuochungus/RTMDet_PRODUCTION main
+          MODEL_URL: ${{secrets.MODEL_URL}}
