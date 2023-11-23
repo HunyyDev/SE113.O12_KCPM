@@ -25,11 +25,14 @@ key: str = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
 # LOAD FIREBASE ADMIN SDK
-firebase_app = initialize_app(
-    credential=credentials.Certificate(
-        json.loads(os.environ.get("FIREBASE_CREDENTIALS"))
+try:
+    firebase_app = initialize_app(
+        credential=credentials.Certificate(
+            json.loads(os.environ.get("FIREBASE_CREDENTIALS"))
+        )
     )
-)
+except ValueError:
+    pass
 db = firestore.client()
 
 # LOAD NEO4J DB
