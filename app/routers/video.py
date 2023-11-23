@@ -40,10 +40,6 @@ async def handleVideoRequest(
         )
 
     try:
-        if user["sub"] is None:
-            return HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="User not found"
-            )
         id = str(now())
         _, artifact_ref = db.collection("artifacts").add(
             {"name": id + ".mp4", "status": "pending"}
