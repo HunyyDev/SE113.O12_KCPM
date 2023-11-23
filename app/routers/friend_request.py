@@ -24,8 +24,6 @@ EXPIRE_MINUTES = 15
 
 @router.get("")
 def getFriendRequest(current_user=Depends(get_current_user)):
-    if current_user["sub"] is None:
-        return HTTPException(status_code=400, detail="User not found")
     friend_requests = (
         db.collection(COLLECTION_NAME)
         .where("inviter", "==", current_user["sub"])
@@ -41,8 +39,6 @@ def getFriendRequest(current_user=Depends(get_current_user)):
 
 @router.post("")
 def createRequest(user=Depends(get_current_user)):
-    if user["sub"] is None:
-        raise HTTPException(status_code=400, detail="User not found")
     _, fr_ref = db.collection(COLLECTION_NAME).add(
         {
             "inviter": user["sub"],
@@ -66,9 +62,6 @@ def createRequest(user=Depends(get_current_user)):
 
 @router.patch("/{RequestId}")
 async def acceptRequest(RequestId: str, user=Depends(get_current_user)):
-    if user["sub"] is None:
-        raise HTTPException(status_code=400, detail="User not found")
-
     fr_ref = db.collection(COLLECTION_NAME).document(RequestId)
     fr = fr_ref.get()
 
