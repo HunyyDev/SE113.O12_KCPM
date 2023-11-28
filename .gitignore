@@ -8,3 +8,4 @@ demo
 **/*.jpg
 .pytest_cache
 !demo.jpg
+/htmlcov

@@ -102,11 +102,11 @@ async def makeFriend(inviteeId: str, inviterId: str):
 @router.delete("/{RequestId}")
 def deleteRequest(RequestId: str, user=Depends(get_current_user)):
     Request_ref = db.collection(COLLECTION_NAME).document(RequestId)
-    Request = Request_ref.get().to_dict()
+    Request = Request_ref.get()
 
     if not Request.exists:
         raise HTTPException(status_code=404, detail="Friend request not found")
-
+    Request = Request.to_dict()
     if isInviter(user, Request):
         Request_ref.delete()
         return {"status": "OK"}
