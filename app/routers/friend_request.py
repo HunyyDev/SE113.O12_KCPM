@@ -111,7 +111,7 @@ def deleteRequest(RequestId: str, user=Depends(get_current_user)):
         Request_ref.delete()
         return {"status": "OK"}
     else:
-        raise HTTPException(status_code=400, detail="You are not inviter")
+        raise HTTPException(status_code=403, detail="You are not inviter")
 
 
 def isRequestExpired(request):
