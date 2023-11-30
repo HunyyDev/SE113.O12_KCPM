@@ -8,6 +8,8 @@ from app.dependencies import get_current_user
 from app import db, logger
 from enum import Enum
 from app.graphdb.main import insert2PersonAndSetFriend
+from fastapi import status
+
 
 router = APIRouter(prefix="/friend_request", tags=["friend_request"])
 
@@ -78,7 +80,9 @@ async def acceptRequest(RequestId: str, user=Depends(get_current_user)):
 
     if isInviter(user, fr):
         if isInviteeEmpty(fr):
-            raise HTTPException(status_code=400, detail="Invitee is empty")
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Invitee is empty"
+            )
         fr_ref.update({"status": RequestStatus.COMPLETE.value})
         await makeFriend(fr["invitee"], fr["inviter"])
         return {"status": "OK"}
