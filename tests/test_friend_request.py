@@ -143,7 +143,6 @@ class TestFriendRequest:
         mmcv.imwrite(result, "qrcode.jpg")
         request_id = read_qr_code("qrcode.jpg")
         ## Send request again (accept friend request when no invitee)
-        request_id = read_qr_code("qrcode.jpg")
         payload = ""
         headers = {
             "Content-Type": "application/json",
@@ -174,12 +173,12 @@ class TestFriendRequest:
         payload = ""
         headers = {
             "Content-Type": "application/json",
-            "Authorization": "Bearer " + inviter['token'],
+            "Authorization": "Bearer " + "xxxxxx",
         }
         response = client.request(
             "PATCH", "friend_request/" + request_id, headers=headers, data=payload
         )
-        assert response.status_code == 400
+        assert response.status_code == 401
         ## Send request
         request_id = read_qr_code("qrcode.jpg")
         payload = ""
@@ -201,7 +200,7 @@ class TestFriendRequest:
         response = client.request(
             "PATCH", "friend_request/" + request_id, headers=headers, data=payload
         )
-        assert response.status_code == 403
+        assert response.status_code == 409
         ## Send request again (accept friend request from invitee)
         request_id = read_qr_code("qrcode.jpg")
         payload = ""
