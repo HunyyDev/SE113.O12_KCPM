@@ -127,7 +127,7 @@ async def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
             _, _ = await asyncio.gather(uploadVideo(), uploadThumbnail())
             print(now() - n)
         except Exception as e:
-            print(e)
+            logger.error(e)
 
         updateArtifact(
             artifactId,
