@@ -1,5 +1,5 @@
 ---
-title: RTMDet
+title: RTMDet 2
 emoji: 🐾
 colorFrom: yellow
 colorTo: pink
