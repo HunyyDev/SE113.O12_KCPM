@@ -76,7 +76,7 @@ async def acceptRequest(RequestId: str, user=Depends(get_current_user)):
         raise HTTPException(status_code=400, detail="Friend request expired")
 
     if isRequestDone(fr):
-        raise HTTPException(status_code=400, detail="Friend request already done")
+        raise HTTPException(status_code=409, detail="Friend request already done")
 
     if isInviter(user, fr):
         if isInviteeEmpty(fr):
@@ -86,13 +86,17 @@ async def acceptRequest(RequestId: str, user=Depends(get_current_user)):
         fr_ref.update({"status": RequestStatus.COMPLETE.value})
         await makeFriend(fr["invitee"], fr["inviter"])
         return {"status": "OK"}
-
-    if isInviteeEmpty(fr) and not isInviter(user, fr):
-        fr_ref.update(
-            {"invitee": user["sub"], "status": RequestStatus.WAITING_INVITER.value}
-        )
-        sendNotificationToInviter(fr["inviter"], user)
-        return {"status": "OK"}
+    else:
+        if isInviteeEmpty(fr):
+            fr_ref.update(
+                {"invitee": user["sub"], "status": RequestStatus.WAITING_INVITER.value}
+            )
+            sendNotificationToInviter(fr["inviter"], user)
+            return {"status": "OK"}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Invitee is not empty"
+            )
 
 
 def sendNotificationToInviter(inviterId: str, invitee):
