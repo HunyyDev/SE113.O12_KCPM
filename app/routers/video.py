@@ -11,6 +11,7 @@ from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
+    Request,
     UploadFile,
     BackgroundTasks,
     status,
@@ -26,12 +27,11 @@ from app import logger
 router = APIRouter(prefix="/video", tags=["Video"])
 
 
-@router.post("")
+@router.post("", dependencies=[Depends(get_current_user)])
 async def handleVideoRequest(
     file: UploadFile,
     background_tasks: BackgroundTasks,
     threshold: float = 0.3,
-    user=Depends(get_current_user),
 ):
     if re.search("^video\/", file.content_type) is None:
         raise HTTPException(
@@ -46,7 +46,7 @@ async def handleVideoRequest(
         )
         os.mkdir(id)
         async with aiofiles.open(os.path.join(id, "input.mp4"), "wb") as out_file:
-            while content := await file.read(1024):
+            while content := await file.read(102400):
                 await out_file.write(content)
         background_tasks.add_task(inferenceVideo, artifact_ref.id, id, threshold)
         return id + ".mp4"
@@ -66,7 +66,7 @@ def createThumbnail(thumbnail, inputDir):
     cv2.imwrite(os.path.join(inputDir, "thumbnail.jpg"), thumbnail)
 
 
-def inference_frame(inputDir, threshold: float = 0.3):
+def inferenceFrame(inputDir, threshold: float = 0.3):
     cap = cv2.VideoCapture(
         filename=os.path.join(inputDir, "input.mp4"), apiPreference=cv2.CAP_FFMPEG
     )
@@ -103,9 +103,10 @@ def inference_frame(inputDir, threshold: float = 0.3):
 
 
 async def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
+    logger.info("Start inference video")
     try:
         Process(updateArtifact(artifactId, {"status": "processing"})).start()
-        thumbnail = inference_frame(inputDir, threshold=threshold)
+        thumbnail = inferenceFrame(inputDir, threshold=threshold)
         createThumbnail(thumbnail, inputDir)
 
         async def uploadVideo():
