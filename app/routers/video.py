@@ -21,6 +21,7 @@ from app import supabase
 from app.dependencies import get_current_user
 from app.routers.image import inferenceImage
 from google.cloud.firestore_v1.base_query import FieldFilter
+from firebase_admin import firestore
 from app import logger
 
 router = APIRouter(prefix="/video", tags=["Video"])
@@ -44,6 +45,7 @@ async def handleVideoRequest(
         _, artifact_ref = db.collection("artifacts").add(
             {"name": id + ".mp4", "status": "pending"}
         )
+        db.collection("user").document(user["sub"]).update({"artifacts": firestore.ArrayUnion(['artifact/' + artifact_ref.id])})
         os.mkdir(id)
         async with aiofiles.open(os.path.join(id, "input.mp4"), "wb") as out_file:
             while content := await file.read(1024):
