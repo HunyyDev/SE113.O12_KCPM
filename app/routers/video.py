@@ -28,7 +28,7 @@ from app import logger
 router = APIRouter(prefix="/video", tags=["Video"])
 
 
-@router.post("", dependencies=[Depends(get_current_user)])
+@router.post("")
 async def handleVideoRequest(
     file: UploadFile,
     background_tasks: BackgroundTasks,
