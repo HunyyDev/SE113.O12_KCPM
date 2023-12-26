@@ -68,15 +68,21 @@ async def acceptRequest(RequestId: str, user=Depends(get_current_user)):
     fr = fr_ref.get()
 
     if not fr.exists:
-        raise HTTPException(status_code=404, detail="Friend request not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Friend request not found"
+        )
 
     fr = fr.to_dict()
 
     if isRequestExpired(fr):
-        raise HTTPException(status_code=400, detail="Friend request expired")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Friend request expired"
+        )
 
     if isRequestDone(fr):
-        raise HTTPException(status_code=400, detail="Friend request already done")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Friend request already done"
+        )
 
     if isInviter(user, fr):
         if isInviteeEmpty(fr):
@@ -86,13 +92,17 @@ async def acceptRequest(RequestId: str, user=Depends(get_current_user)):
         fr_ref.update({"status": RequestStatus.COMPLETE.value})
         await makeFriend(fr["invitee"], fr["inviter"])
         return {"status": "OK"}
-
-    if isInviteeEmpty(fr) and not isInviter(user, fr):
-        fr_ref.update(
-            {"invitee": user["sub"], "status": RequestStatus.WAITING_INVITER.value}
-        )
-        sendNotificationToInviter(fr["inviter"], user)
-        return {"status": "OK"}
+    else:
+        if isInviteeEmpty(fr):
+            fr_ref.update(
+                {"invitee": user["sub"], "status": RequestStatus.WAITING_INVITER.value}
+            )
+            sendNotificationToInviter(fr["inviter"], user)
+            return {"status": "OK"}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Invitee is not empty"
+            )
 
 
 def sendNotificationToInviter(inviterId: str, invitee):
@@ -109,13 +119,17 @@ def deleteRequest(RequestId: str, user=Depends(get_current_user)):
     Request = Request_ref.get()
 
     if not Request.exists:
-        raise HTTPException(status_code=404, detail="Friend request not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Friend request not found"
+        )
     Request = Request.to_dict()
     if isInviter(user, Request):
         Request_ref.delete()
         return {"status": "OK"}
     else:
-        raise HTTPException(status_code=403, detail="You are not inviter")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="You are not inviter"
+        )
 
 
 def isRequestExpired(request):
