@@ -2,8 +2,7 @@ from fastapi import FastAPI
 from starlette.responses import RedirectResponse
 
 
-from app.graphdb.main import insert2PersonAndSetFriend, deleteFriend
-from .routers import image, video, friend_request, me, auth
+from .routers import image, video, me, auth, friend_request
 
 app = FastAPI()
 

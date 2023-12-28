@@ -5,10 +5,12 @@ services:
         ports:
             - "3000:3000"
         environment:
-            - SUPABASE_URL=your-supabase-url
-            - SUPABASE_KEY=your-supabase-key
-            - FIREBASE_CREDENTIALS=your-firebase-credentials
-            - FIREBASE_API_KEY=your-firebase-api-key
-            - NEO4J_URI=your-neo4j-uri
-            - NEO4J_USERNAME=your-neo4j-username
-            - NEO4J_PASSWORD=your-neo4j-password
+            - SUPABASE_URL=your_supabase_url
+            - SUPABASE_KEY=your_supabase_sevice_role_key
+            - FIREBASE_CREDENTIALS=your_firebase_credentials
+            - FIREBASE_API_KEY=your_firebase_api_key
+            - NEO4J_URI=your_neo4j_uri
+            - NEO4J_USERNAME=your_neo4j_username
+            - NEO4J_PASSWORD=your_neo4j_password
+            - AURA_INSTANCEID=your_neo4j_aura_instance_id
+            - AURA_INSTANCENAME=your_neo4j_aura_instance_name
