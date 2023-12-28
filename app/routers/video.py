@@ -9,7 +9,9 @@ import cv2
 from multiprocessing import Process
 from fastapi import (
     APIRouter,
+    Depends,
     HTTPException,
+    Request,
     UploadFile,
     BackgroundTasks,
     status,
@@ -18,8 +20,9 @@ from firebase_admin import messaging
 from app import db
 from app import supabase
 from app.dependencies import get_current_user
-from app.routers.image import inference_image
+from app.routers.image import inferenceImage
 from google.cloud.firestore_v1.base_query import FieldFilter
+from google.cloud.firestore import ArrayUnion
 from app import logger
 
 router = APIRouter(prefix="/video", tags=["Video"])
@@ -30,6 +33,7 @@ async def handleVideoRequest(
     file: UploadFile,
     background_tasks: BackgroundTasks,
     threshold: float = 0.3,
+    user=Depends(get_current_user)
 ):
     if re.search("^video\/", file.content_type) is None:
         raise HTTPException(
@@ -42,11 +46,12 @@ async def handleVideoRequest(
         _, artifact_ref = db.collection("artifacts").add(
             {"name": id + ".mp4", "status": "pending"}
         )
+        db.collection("user").document(user["sub"]).update({"artifacts": ArrayUnion(['artifact/' + artifact_ref.id])})
         os.mkdir(id)
         async with aiofiles.open(os.path.join(id, "input.mp4"), "wb") as out_file:
-            while content := await file.read(1024):
+            while content := await file.read(102400):
                 await out_file.write(content)
-        await inference_video(artifact_ref.id, id, threshold)
+        background_tasks.add_task(inferenceVideo, artifact_ref.id, id, threshold)
         return id + ".mp4"
     except ValueError as err:
         logger.error(err)
@@ -64,7 +69,7 @@ def createThumbnail(thumbnail, inputDir):
     cv2.imwrite(os.path.join(inputDir, "thumbnail.jpg"), thumbnail)
 
 
-def inference_frame(inputDir, threshold: float = 0.3):
+def inferenceFrame(inputDir, threshold: float = 0.3):
     cap = cv2.VideoCapture(
         filename=os.path.join(inputDir, "input.mp4"), apiPreference=cv2.CAP_FFMPEG
     )
@@ -91,7 +96,7 @@ def inference_frame(inputDir, threshold: float = 0.3):
         if res == False:
             break
 
-        resFram = inference_image(frame, threshold)
+        resFram = inferenceImage(frame, threshold, False)
         result.write(resFram)
     cap.release()
     result.release()
@@ -100,10 +105,11 @@ def inference_frame(inputDir, threshold: float = 0.3):
     return thumbnail
 
 
-async def inference_video(artifactId: str, inputDir: str, threshold: float):
+async def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
+    logger.info("Start inference video")
     try:
-        Process(update_artifact(artifactId, {"status": "processing"})).start()
-        thumbnail = inference_frame(inputDir, threshold=threshold)
+        Process(updateArtifact(artifactId, {"status": "processing"})).start()
+        thumbnail = inferenceFrame(inputDir, threshold=threshold)
         createThumbnail(thumbnail, inputDir)
 
         async def uploadVideo():
@@ -125,9 +131,9 @@ async def inference_video(artifactId: str, inputDir: str, threshold: float):
             _, _ = await asyncio.gather(uploadVideo(), uploadThumbnail())
             print(now() - n)
         except Exception as e:
-            print(e)
+            logger.error(e)
 
-        update_artifact(
+        updateArtifact(
             artifactId,
             {
                 "status": "success",
@@ -141,7 +147,7 @@ async def inference_video(artifactId: str, inputDir: str, threshold: float):
         )
     except:
         Process(
-            update_artifact(
+            updateArtifact(
                 artifactId,
                 {
                     "status": "fail",
@@ -155,7 +161,7 @@ async def inference_video(artifactId: str, inputDir: str, threshold: float):
             print(e)
 
 
-def update_artifact(artifactId: str, body):
+def updateArtifact(artifactId: str, body):
     artifact_ref = db.collection("artifacts").document(artifactId)
     artifact_snapshot = artifact_ref.get()
     if artifact_snapshot.exists:
