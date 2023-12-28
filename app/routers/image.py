@@ -11,7 +11,7 @@ router = APIRouter(prefix="/image", tags=["Image"])
 @router.post("")
 async def handleImageRequest(
     file: bytes = File(...),
-    threshold: float = 0.3,
+    threshold: float = 0.5,
 ):
     try:
         img = imfrombytes(file, cv2.IMREAD_COLOR)

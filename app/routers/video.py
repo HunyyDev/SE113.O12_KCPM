@@ -32,8 +32,8 @@ router = APIRouter(prefix="/video", tags=["Video"])
 async def handleVideoRequest(
     file: UploadFile,
     background_tasks: BackgroundTasks,
-    threshold: float = 0.3,
-    user=Depends(get_current_user)
+    threshold: float = 0.5,
+    user=Depends(get_current_user),
 ):
     if re.search("^video\/", file.content_type) is None:
         raise HTTPException(
@@ -46,7 +46,9 @@ async def handleVideoRequest(
         _, artifact_ref = db.collection("artifacts").add(
             {"name": id + ".mp4", "status": "pending"}
         )
-        db.collection("user").document(user["sub"]).update({"artifacts": ArrayUnion(['artifact/' + artifact_ref.id])})
+        db.collection("user").document(user["sub"]).update(
+            {"artifacts": ArrayUnion(["artifact/" + artifact_ref.id])}
+        )
         os.mkdir(id)
         async with aiofiles.open(os.path.join(id, "input.mp4"), "wb") as out_file:
             while content := await file.read(102400):
