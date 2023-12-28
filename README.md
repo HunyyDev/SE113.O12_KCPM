@@ -14,6 +14,7 @@ bash
 
 Prerequisite:
 Docker
+
 The application needs to use Firebase and Supabase, please create a Firebase project and Supabase project before continuing.
 ```
 docker compose up -d
