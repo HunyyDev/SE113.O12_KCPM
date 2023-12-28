@@ -1,7 +1,6 @@
 aiofiles==23.2.1
 fastapi==0.103.1
 mmcv==2.0.1
-mmdeploy_runtime==1.2.0
 numpy==1.24.4
 opencv_python==4.8.0.76
 python-dotenv==1.0.0
@@ -14,3 +13,4 @@ pytest
 pytest-cov
 qrcode==7.4.2
 neo4j==5.14.1
+onnxruntime==1.16.2
