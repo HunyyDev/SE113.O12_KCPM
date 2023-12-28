@@ -141,11 +141,21 @@ class TestFriendRequest:
         assert result.shape[2] == 3
         # Write image for later read
         mmcv.imwrite(result, "qrcode.jpg")
+        request_id = read_qr_code("qrcode.jpg")
+        ## Send request again (accept friend request when no invitee)
+        payload = ""
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + inviter["token"],
+        }
+        response = client.request(
+            "PATCH", "friend_request/" + request_id, headers=headers, data=payload
+        )
+        assert response.status_code == 409
         # Now test for the invitee aka the one that scan QR code
         # Delete invitee user (if existed)
         user_ref.document(invitee["id"]).delete()
         # Test when the invitee is unknow user (no user entity in database)
-        request_id = read_qr_code("qrcode.jpg")
         payload = ""
         headers = {
             "Content-Type": "application/json",
@@ -159,6 +169,17 @@ class TestFriendRequest:
         # Create invitee user
         user_ref.document(invitee["id"]).set({"deviceId": deviceId})
         # Send request
+        ## Send request with false token 
+        payload = ""
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + "xxxxxx",
+        }
+        response = client.request(
+            "PATCH", "friend_request/" + request_id, headers=headers, data=payload
+        )
+        assert response.status_code == 401
+        ## Send request
         request_id = read_qr_code("qrcode.jpg")
         payload = ""
         headers = {
@@ -169,6 +190,105 @@ class TestFriendRequest:
             "PATCH", "friend_request/" + request_id, headers=headers, data=payload
         )
         assert response.status_code == 200
+        ## Send request again (false)
+        request_id = read_qr_code("qrcode.jpg")
+        payload = ""
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + invitee["token"],
+        }
+        response = client.request(
+            "PATCH", "friend_request/" + request_id, headers=headers, data=payload
+        )
+        assert response.status_code == 409
+        ## Send request again (accept friend request from invitee)
+        request_id = read_qr_code("qrcode.jpg")
+        payload = ""
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + inviter["token"],
+        }
+        response = client.request(
+            "PATCH", "friend_request/" + request_id, headers=headers, data=payload
+        )
+        assert response.status_code == 200
+        # Delete entity for next time test
+        user_ref.document(inviter["id"]).delete()
+        user_ref.document(invitee["id"]).delete()
+    def test_delete_requestF(self, client, inviter, invitee):
+        # Call the firebase database
+        friend_request_ref = db.collection("friend_request")
+        # Remove all the friend_request use for testing in the past
+        query = friend_request_ref.where(
+            filter=FieldFilter("inviter", "==", inviter["id"])
+        )
+        docs = query.stream()
+        for doc in docs:
+            doc.reference.delete()
+        # Delete the user for safety-check
+        user_ref = db.collection("user")
+        user_ref.document(inviter["id"]).delete()
+        # Create request and re-send
+        user_ref.document(inviter["id"]).set({"deviceId": deviceId})
+        payload = ""
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + inviter["token"],
+        }
+        response = client.request(
+            "POST", "friend_request", headers=headers, data=payload
+        )
+        assert response.status_code == 200
+        result = mmcv.imfrombytes(response.read())
+        # Check returned QR image
+        assert result.shape[2] == 3
+        # Write image for later read
+        mmcv.imwrite(result, "qrcode.jpg")
+        request_id = read_qr_code("qrcode.jpg")
+        #Check with unknowed invitee
+        payload = ""
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + invitee["token"],
+        }
+        response = client.request(
+            "DELETE", "friend_request/" + request_id, headers=headers, data=payload
+        )
+        assert response.status_code == 403
+        #Delete invitee for safety check
+        user_ref.document(invitee["id"]).delete()
+        # Create invitee user
+        user_ref.document(invitee["id"]).set({"deviceId": deviceId})
+        # check DELETE route
+        payload = ""
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + inviter["token"],
+        }
+        response = client.request(
+            "DELETE", "friend_request/" + "xxxx", headers=headers, data=payload
+        )
+        assert response.status_code == 404
+        payload = ""
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + invitee["token"],
+        }
+        response = client.request(
+            "DELETE", "friend_request/" + request_id, headers=headers, data=payload
+        )
+        assert response.status_code == 403
+        #Correct Request
+        payload = ""
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + inviter["token"],
+        }
+        response = client.request(
+            "DELETE", "friend_request/" + request_id, headers=headers, data=payload
+        )
+        assert response.status_code == 200
+
         # Delete entity for next time test
         user_ref.document(inviter["id"]).delete()
         user_ref.document(invitee["id"]).delete()
