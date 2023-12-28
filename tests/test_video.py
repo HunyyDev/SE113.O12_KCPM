@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from fastapi.routing import APIRoute
-from app.routers.video import updateArtifact, createThumbnail, inference_frame
+from app.routers.video import update_artifact, createThumbnail, inference_frame
 from app.main import app
 from app.constants import deviceId
 from app import db
@@ -107,7 +107,7 @@ class TestVideoAPI:
         else:
             test_artifact.update({"status": "testing", 'path': '', "thumbnailURL":""})
         # Testing update on each field
-        updateArtifact(test_artifact.id,{"status": "test_done"})
+        update_artifact(test_artifact.id,{"status": "test_done"})
         assert db.collection("artifacts").document('test').get().to_dict()['status'] == 'test_done'
         #Delete data for next time test
         test_artifact.delete()

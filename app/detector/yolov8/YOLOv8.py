@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import onnxruntime
 
-from yolov8.utils import xywh2xyxy, draw_detections, multiclass_nms
+from app.detector.yolov8.utils import xywh2xyxy, draw_detections, multiclass_nms
 
 
 class YOLOv8:
@@ -16,6 +16,9 @@ class YOLOv8:
 
     def __call__(self, image):
         return self.detect_objects(image)
+
+    def set_conf_threshold(self, conf_thres):
+        self.conf_threshold = conf_thres
 
     def initialize_model(self, path):
         self.session = onnxruntime.InferenceSession(

@@ -1,6 +1,6 @@
 from app.custom_mmcv.color import color_val
 from app.custom_mmcv.main import imshow_det_bboxes
-from app.constants import classNames
+from app.constants import class_names
 import mmcv
 import cv2
 import numpy as np
@@ -30,22 +30,22 @@ class TestCustomMMCV():
         image = mmcv.imread('demo.jpg')
         bboxes = np.ones((1,5))
         labels = np.zeros(1, dtype=np.int32)
-        result = imshow_det_bboxes(image, bboxes, labels, class_names=classNames, bbox_color="red", text_color='red')
+        result = imshow_det_bboxes(image, bboxes, labels, class_names=class_names, bbox_color="red", text_color='red')
         assert (result[1,1,:] == (0,0,255)).all()
         with pytest.raises(AssertionError):
             bboxes = np.ones((1,3))
             labels = np.zeros(1, dtype=np.int32)
-            result = imshow_det_bboxes(image, bboxes, labels, class_names=classNames, bbox_color="red",text_color="red")
+            result = imshow_det_bboxes(image, bboxes, labels, class_names=class_names, bbox_color="red",text_color="red")
         with pytest.raises(AssertionError):
             bboxes = np.ones((1,7))
             labels = np.zeros(1, dtype=np.int32)
-            result = imshow_det_bboxes(image, bboxes, labels, class_names=classNames, bbox_color="red",text_color="red")
+            result = imshow_det_bboxes(image, bboxes, labels, class_names=class_names, bbox_color="red",text_color="red")
         with pytest.raises(AssertionError):
             bboxes = np.ones((1,5))
             labels = np.zeros(4, dtype=np.int32)
-            result = imshow_det_bboxes(image, bboxes, labels, class_names=classNames, bbox_color="red",text_color="red")
+            result = imshow_det_bboxes(image, bboxes, labels, class_names=class_names, bbox_color="red",text_color="red")
         with pytest.raises(AssertionError):
             bboxes = np.ones((2,5))
             labels = np.zeros(1, dtype=np.int32)
-            result = imshow_det_bboxes(image, bboxes, labels, class_names=classNames, bbox_color="red",text_color="red")
+            result = imshow_det_bboxes(image, bboxes, labels, class_names=class_names, bbox_color="red",text_color="red")
         

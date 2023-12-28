@@ -9,7 +9,6 @@ import cv2
 from multiprocessing import Process
 from fastapi import (
     APIRouter,
-    Depends,
     HTTPException,
     UploadFile,
     BackgroundTasks,
@@ -19,7 +18,7 @@ from firebase_admin import messaging
 from app import db
 from app import supabase
 from app.dependencies import get_current_user
-from app.routers.image import inferenceImage
+from app.routers.image import inference_image
 from google.cloud.firestore_v1.base_query import FieldFilter
 from app import logger
 
@@ -31,7 +30,6 @@ async def handleVideoRequest(
     file: UploadFile,
     background_tasks: BackgroundTasks,
     threshold: float = 0.3,
-    user=Depends(get_current_user),
 ):
     if re.search("^video\/", file.content_type) is None:
         raise HTTPException(
@@ -48,7 +46,7 @@ async def handleVideoRequest(
         async with aiofiles.open(os.path.join(id, "input.mp4"), "wb") as out_file:
             while content := await file.read(1024):
                 await out_file.write(content)
-        background_tasks.add_task(inferenceVideo, artifact_ref.id, id, threshold)
+        await inference_video(artifact_ref.id, id, threshold)
         return id + ".mp4"
     except ValueError as err:
         logger.error(err)
@@ -93,7 +91,7 @@ def inference_frame(inputDir, threshold: float = 0.3):
         if res == False:
             break
 
-        resFram = inferenceImage(frame, threshold, False)
+        resFram = inference_image(frame, threshold)
         result.write(resFram)
     cap.release()
     result.release()
@@ -102,9 +100,9 @@ def inference_frame(inputDir, threshold: float = 0.3):
     return thumbnail
 
 
-async def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
+async def inference_video(artifactId: str, inputDir: str, threshold: float):
     try:
-        Process(updateArtifact(artifactId, {"status": "processing"})).start()
+        Process(update_artifact(artifactId, {"status": "processing"})).start()
         thumbnail = inference_frame(inputDir, threshold=threshold)
         createThumbnail(thumbnail, inputDir)
 
@@ -129,7 +127,7 @@ async def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
         except Exception as e:
             print(e)
 
-        updateArtifact(
+        update_artifact(
             artifactId,
             {
                 "status": "success",
@@ -143,7 +141,7 @@ async def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
         )
     except:
         Process(
-            updateArtifact(
+            update_artifact(
                 artifactId,
                 {
                     "status": "fail",
@@ -157,7 +155,7 @@ async def inferenceVideo(artifactId: str, inputDir: str, threshold: float):
             print(e)
 
 
-def updateArtifact(artifactId: str, body):
+def update_artifact(artifactId: str, body):
     artifact_ref = db.collection("artifacts").document(artifactId)
     artifact_snapshot = artifact_ref.get()
     if artifact_snapshot.exists:
