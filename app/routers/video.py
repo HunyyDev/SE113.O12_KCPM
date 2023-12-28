@@ -21,7 +21,7 @@ from firebase_admin import messaging
 from app import db
 from app import supabase
 from app.dependencies import get_current_user
-from app.routers.image import inferenceImage
+from app.routers.image import inference_image
 from google.cloud.firestore_v1.base_query import FieldFilter
 from google.cloud.firestore import ArrayUnion
 from app import logger
@@ -99,7 +99,7 @@ def inferenceFrame(inputDir, threshold: float = 0.3):
         if res == False:
             break
 
-        resFram = inferenceImage(frame, threshold, False)
+        resFram = inference_image(frame, threshold)
         result.write(resFram)
     cap.release()
     result.release()
