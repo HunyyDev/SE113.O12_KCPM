@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from starlette.responses import RedirectResponse
+
 
 from app.graphdb.main import insert2PersonAndSetFriend, deleteFriend
 from .routers import image, video, friend_request, me, auth
@@ -12,7 +14,6 @@ app.include_router(me.router)
 app.include_router(auth.router)
 
 
-@app.get("/test")
-async def test():
-    await insert2PersonAndSetFriend("1", "2")
-    await deleteFriend("1", "2")
+@app.get("/")
+def redirect():
+    return RedirectResponse(url="/docs")
