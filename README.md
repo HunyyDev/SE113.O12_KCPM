@@ -1,5 +1,5 @@
 ---
-title: RTMDet 2
+title: Traffic Detection
 emoji: 🐾
 colorFrom: yellow
 colorTo: pink
@@ -8,9 +8,11 @@ pinned: false
 app_port: 3000
 ---
 
-HOW TO RUN:
-open compose.yaml file and mannually change environment variables
-bash
+## Prerequisite:
+Before you proceed, make sure you have installed/created the following application/service:
+1. Docker, link at: https://www.docker.com
+2. Supabase, you can self-host the service or create a free Supabase project at: https://supabase.com
+3. Firebase, you can create a free Firebase project at: https://firebase.google.com
 
 ```
 docker compose up -d
