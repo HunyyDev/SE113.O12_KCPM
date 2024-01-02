@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
+        with:
+          fetch-depth: 0
       - name: Set up Python 3.8 and install dependencies
         uses: actions/setup-python@v3
         with:
@@ -33,4 +34,4 @@ jobs:
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push --force https://phuochungus:$HF_TOKEN@huggingface.co/spaces/phuochungus/RTMDet_PRODUCTION main
+        run: git push https://phuochungus:$HF_TOKEN@huggingface.co/spaces/phuochungus/RTMDet_PRODUCTION main
