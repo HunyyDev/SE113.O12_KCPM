@@ -27,7 +27,7 @@ jobs:
 
       - name: download model
         run: |
-          wget -P ./model $MODEL_URL
+          wget -P -O ./model $MODEL_URL
         env:
           MODEL_URL: ${{secrets.MODEL_URL2}}
 
