@@ -26,7 +26,7 @@ jobs:
 
       - name: download model
         run: |
-          wget -P ./model/best20231112.onnx $MODEL_URL2
+          wget -P ./model/best20231112.onnx $MODEL_URL
         env:
           MODEL_URL: ${{secrets.MODEL_URL2}}
 
