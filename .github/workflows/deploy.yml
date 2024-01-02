@@ -1,7 +1,10 @@
-name: Deploy
+name: Hot Deploy
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - DA1
 
 jobs:
   deploy:
