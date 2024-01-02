@@ -2,9 +2,6 @@ name: Deploy
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - DA1
 
 jobs:
   deploy:
@@ -26,6 +23,11 @@ jobs:
 
       - name: download model
         run: |
-          wget -P ./model $MODEL_URL
+          wget -P ./model/best20231112.onnx $MODEL_URL2
         env:
-          MODEL_URL: ${{secrets.MODEL_URL}}
+          MODEL_URL: ${{secrets.MODEL_URL2}}
+
+      - name: Push to hub
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: git push https://phuochungus:$HF_TOKEN@huggingface.co/spaces/phuochungus/RTMDet_PRODUCTION main --force
