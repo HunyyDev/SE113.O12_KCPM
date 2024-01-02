@@ -16,4 +16,4 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           git remote add space https://phuochungus:$HF_TOKEN@huggingface.co/spaces/phuochungus/RTMDet_PRODUCTION
-          git push space DA1:main
+          git push space DA1:main --force
