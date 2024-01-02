@@ -1,4 +1,4 @@
-from app import driver, logger
+from . import driver
 
 
 def match_person_nodes(tx, uid1: str, uid2: str):
@@ -14,7 +14,6 @@ def match_person_nodes(tx, uid1: str, uid2: str):
 
 
 async def insert2PersonAndSetFriend(uid1: str, uid2: str):
-    logger.info(uid1 + " " + uid2)
     with driver.session() as session:
         session.write_transaction(match_person_nodes, uid1, uid2)
 

@@ -5,7 +5,6 @@ import logging
 from dotenv import load_dotenv
 from supabase import create_client, Client
 from firebase_admin import credentials, initialize_app, firestore
-from neo4j import GraphDatabase
 
 
 logging.basicConfig(level=logging.DEBUG)
