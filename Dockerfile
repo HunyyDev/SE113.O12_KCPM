@@ -24,7 +24,7 @@ COPY --chown=user . .
 #DOWNLOAD MODEL
 ENV MODEL_URL=https://hdfxssmjuydwfwarxnfe.supabase.co/storage/v1/object/public/model/best20231112.onnx
 
-RUN ./model/download.sh
+RUN chmod 777 ./model/download.sh && ./model/download.sh
 
 EXPOSE 3000
 
