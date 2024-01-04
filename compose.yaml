@@ -14,3 +14,4 @@ services:
             - NEO4J_PASSWORD=your_neo4j_password
             - AURA_INSTANCEID=your_neo4j_aura_instance_id
             - AURA_INSTANCENAME=your_neo4j_aura_instance_name
+            - MODEL_URL=https://hdfxssmjuydwfwarxnfe.supabase.co/storage/v1/object/public/model/best20231112.onnx
