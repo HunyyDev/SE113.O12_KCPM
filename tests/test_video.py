@@ -101,7 +101,8 @@ class TestVideoAPI:
         for doc in docs:
             # For each document in docs. Verify name and status of the artifact
             index += 1
-            data = doc.get().to_dict()
+            data = doc.to_dict()
+            print(data)
             assert data["name"] == artifactName
             assert data["status"] == "pending"
             assert index == 1

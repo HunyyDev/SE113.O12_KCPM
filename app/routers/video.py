@@ -24,7 +24,7 @@ from app.routers.image import inferenceImage
 from google.cloud.firestore_v1.base_query import FieldFilter
 from google.cloud.firestore import ArrayUnion
 from app import logger
-
+from custom_utils import utils
 router = APIRouter(prefix="/video", tags=["Video"])
 
 
@@ -166,51 +166,4 @@ def updateArtifact(artifactId: str, body):
     artifact_snapshot = artifact_ref.get()
     if artifact_snapshot.exists:
         artifact_ref.update(body)
-    # sendMessage(artifactId)
-
-
-# This function cannot be automation test because the requirement of another device to receive notification
-def sendMessage(artifactId: str, message: str = None):
-    token = []
-    artifact = db.collection("artifacts").document(artifactId).get()
-    if not artifact.exists:
-        return
-    user_ref = db.collection("user").where(
-        filter=FieldFilter("artifacts", "array-contains", "artifacts/" + artifactId)
-    )
-    for user in user_ref:
-        token.append(user.get().to_dict()["deviceId"])
-    if message is not None:
-        messaging.MulticastMessage(
-            data={
-                "notification": {
-                    "title": message,
-                    "body": "Video "
-                    + artifact.name
-                    + " has done inference. Click here to see the video",
-                },
-            },
-            android=messaging.AndroidConfig(
-                notification=messaging.AndroidNotification(
-                    icon="stock_ticker_update", color="#f45342"
-                ),
-            ),
-        )
-    else:
-        messaging.MulticastMessage(
-            data={
-                "notification": {
-                    "title": "Video " + artifact.name + " has done inference.",
-                    "body": "Video "
-                    + artifact.name
-                    + " has done inference. Click here to see the video",
-                },
-            },
-            android=messaging.AndroidConfig(
-                notification=messaging.AndroidNotification(
-                    icon="stock_ticker_update", color="#f45342"
-                ),
-            ),
-        )
-    response = messaging.send_multicast(message)
-    return response.success_count
+    utils.sendMessage(artifactId)
