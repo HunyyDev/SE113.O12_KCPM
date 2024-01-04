@@ -1,7 +1,7 @@
 services:
-    app:
+    server:
         build: .
-        image: phuochungus/rtmdet
+        image: traffic_detection_server
         ports:
             - "3000:3000"
         environment:
