@@ -3,8 +3,6 @@ FROM python:3.8
 #CREATE A USER
 RUN useradd -m -u 1000 user
 
-RUN apt-get update && apt-get install -y libgl1 ffmpeg redis
-
 USER user
 
 ENV HOME=/home/user \
