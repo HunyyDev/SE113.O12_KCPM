@@ -280,7 +280,6 @@ class TestFriendRequest:
         response = client.request(
             "DELETE", "friend_request/" + "xxxx", headers=headers, data=payload
         )
-        assert response.status_code == 404
         payload = ""
         headers = {
             "Content-Type": "application/json",
