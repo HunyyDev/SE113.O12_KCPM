@@ -7,11 +7,11 @@ on:
     branches:
       - main
 jobs:
-  build-linux:
+  build-unbuntu:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ "3.7", "3.8", "3.9"]
+        python-version: [ "3.8.10", "3.8.13", "3.9"]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python 3.8 and install dependencies
@@ -40,3 +40,38 @@ jobs:
           AURA_INSTANCEID: ${{secrets.AURA_INSTANCEID}}
           AURA_INSTANCENAME: ${{secrets.AURA_INSTANCENAME}}
           FIREBASE_API_KEY: ${{secrets.FIREBASE_API_KEY}}
+  build-linux:
+    runs-on: linux-latest
+    strategy:
+      matrix:
+        python-version: [ "3.8.10", "3.8.13", "3.9"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.8 and install dependencies
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -r app/requirements.txt
+      - name: install apt dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: wget libgl1 ffmpeg redis
+      - name: download model
+        run: |
+          wget -O ./model/end2end.onnx $MODEL_URL
+        env:
+          MODEL_URL: ${{secrets.MODEL_URL}}
+      - name: Run test
+        run: pytest
+        env:
+          SUPABASE_URL: ${{secrets.SUPABASE_URL}}
+          SUPABASE_KEY: ${{secrets.SUPABASE_KEY}}
+          FIREBASE_CREDENTIALS: ${{secrets.FIREBASE_CREDENTIALS}}
+          NEO4J_URI: ${{secrets.NEO4J_URI}}
+          NEO4J_USERNAME: ${{secrets.NEO4J_USERNAME}}
+          NEO4J_PASSWORD: ${{secrets.NEO4J_PASSWORD}}
+          AURA_INSTANCEID: ${{secrets.AURA_INSTANCEID}}
+          AURA_INSTANCENAME: ${{secrets.AURA_INSTANCENAME}}
+          FIREBASE_API_KEY: ${{secrets.FIREBASE_API_KEY}}
+  
+
