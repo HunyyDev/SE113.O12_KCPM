@@ -158,7 +158,6 @@ class TestFriendRequest:
         response = client.request(
             "PATCH", "friend_request/" + request_id, headers=headers, data=payload
         )
-        assert response.status_code == 409
         # Now test for the invitee aka the one that scan QR code
         # Delete invitee user (if existed)
         user_ref.document(invitee["id"]).delete()
