@@ -120,6 +120,10 @@ class TestVideoAPI:
             test_artifact.update({"status": "testing", "path": "", "thumbnailURL": ""})
         # Testing update on each field
         updateArtifact(test_artifact.id, {"status": "test_done"})
+        assert (
+            db.collection("artifacts").document("test").get().to_dict()["status"]
+            == "test_done"
+        )
         # Delete data for next time test
         test_artifact.delete()
 

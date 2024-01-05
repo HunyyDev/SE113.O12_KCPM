@@ -121,16 +121,10 @@ class TestFriendRequest:
             "Content-Type": "application/json",
             "Authorization": "Bearer " + inviter["token"],
         }
-        flag = False
-        for i in range(5):
-            response = client.request(
-                "POST", "friend_request", headers=headers, data=payload
-            )
-            if response.status_code == 200:
-                flag = True
-                break
-            else:
-                time.sleep(2)
+        response = client.request(
+            "POST", "friend_request", headers=headers, data=payload
+        )
+        assert response.status_code == 403
         # Create request and re-send
         user_ref.document(inviter["id"]).set({"deviceId": deviceId})
         payload = ""
@@ -267,6 +261,7 @@ class TestFriendRequest:
         response = client.request(
             "DELETE", "friend_request/" + request_id, headers=headers, data=payload
         )
+        assert response.status_code == 403
         #Delete invitee for safety check
         user_ref.document(invitee["id"]).delete()
         # Create invitee user
@@ -280,6 +275,7 @@ class TestFriendRequest:
         response = client.request(
             "DELETE", "friend_request/" + "xxxx", headers=headers, data=payload
         )
+        assert response.status_code == 404
         payload = ""
         headers = {
             "Content-Type": "application/json",
