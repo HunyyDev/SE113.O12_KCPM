@@ -11,6 +11,7 @@ import requests
 import json
 import cv2
 import shutil
+import time
 from google.cloud.firestore_v1.base_query import FieldFilter
 
 
@@ -120,10 +121,14 @@ class TestVideoAPI:
             test_artifact.update({"status": "testing", "path": "", "thumbnailURL": ""})
         # Testing update on each field
         updateArtifact(test_artifact.id, {"status": "test_done"})
-        assert (
-            db.collection("artifacts").document("test").get().to_dict()["status"]
-            == "test_done"
-        )
+        flag = False
+        for i in range(5):
+            if db.collection("artifacts").document("test").get().to_dict()["status"] == "test_done":
+                flag = True
+                break
+            else:
+                time.sleep(2)
+        assert flag == True
         # Delete data for next time test
         test_artifact.delete()
 
