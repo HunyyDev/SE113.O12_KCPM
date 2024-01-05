@@ -129,6 +129,8 @@ class TestFriendRequest:
             if response.status_code == 200:
                 flag = True
                 break
+            else:
+                time.sleep(2)
         assert flag == True
         # Create request and re-send
         user_ref.document(inviter["id"]).set({"deviceId": deviceId})
