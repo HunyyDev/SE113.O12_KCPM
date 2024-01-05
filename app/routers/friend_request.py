@@ -74,7 +74,7 @@ async def acceptRequest(RequestId: str, user=Depends(get_current_user)):
 
     fr = fr.to_dict()
 
-    if isRequestExpired(fr):
+    if isRequestExpiredOrNull(fr):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Friend request expired"
         )
@@ -132,7 +132,9 @@ def deleteRequest(RequestId: str, user=Depends(get_current_user)):
         )
 
 
-def isRequestExpired(request):
+def isRequestExpiredOrNull(request):
+    if request["expire_at"] is None:
+        return True
     return request["expire_at"] < datetime.datetime.now(tz=datetime.timezone.utc)
 
 
