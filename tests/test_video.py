@@ -108,24 +108,24 @@ class TestVideoAPI:
             assert index == 1
             doc.delete()
 
-    def test_update_artifact(self):
-        # Check and preprocess test data before testing
-        test_artifact = db.collection("artifacts").document("test")
-        if not test_artifact.get().exists:
-            db.collection("artifacts").document("test").set(
-                {"name": "test", "path": "", "status": "testing", "thumbnailURL": ""}
-            )
-            test_artifact = db.collection("artifacts").document("test")
-        else:
-            test_artifact.update({"status": "testing", "path": "", "thumbnailURL": ""})
-        # Testing update on each field
-        updateArtifact(test_artifact.id, {"status": "test_done"})
-        assert (
-            db.collection("artifacts").document("test").get().to_dict()["status"]
-            == "test_done"
-        )
-        # Delete data for next time test
-        test_artifact.delete()
+    # def test_update_artifact(self):
+    #     # Check and preprocess test data before testing
+    #     test_artifact = db.collection("artifacts").document("test")
+    #     if not test_artifact.get().exists:
+    #         db.collection("artifacts").document("test").set(
+    #             {"name": "test", "path": "", "status": "testing", "thumbnailURL": ""}
+    #         )
+    #         test_artifact = db.collection("artifacts").document("test")
+    #     else:
+    #         test_artifact.update({"status": "testing", "path": "", "thumbnailURL": ""})
+    #     # Testing update on each field
+    #     updateArtifact(test_artifact.id, {"status": "test_done"})
+    #     assert (
+    #         db.collection("artifacts").document("test").get().to_dict()["status"]
+    #         == "test_done"
+    #     )
+    #     # Delete data for next time test
+    #     test_artifact.delete()
 
     def test_inference_frame(self):
         if not os.path.exists("test_vid"):

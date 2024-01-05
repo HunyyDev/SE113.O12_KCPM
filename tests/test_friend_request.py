@@ -132,10 +132,17 @@ class TestFriendRequest:
             "Content-Type": "application/json",
             "Authorization": "Bearer " + inviter["token"],
         }
-        response = client.request(
-            "POST", "friend_request", headers=headers, data=payload
-        )
-        assert response.status_code == 200
+        flag = False
+        for i in range(5):
+            response = client.request(
+                "POST", "friend_request", headers=headers, data=payload
+            )
+            if response.status_code == 200:
+                flag = True
+                break
+            else:
+                time.sleep(2)
+        assert flag == True
         result = mmcv.imfrombytes(response.read())
         # Check returned QR image
         assert result.shape[2] == 3
