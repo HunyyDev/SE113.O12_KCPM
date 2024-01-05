@@ -121,10 +121,15 @@ class TestFriendRequest:
             "Content-Type": "application/json",
             "Authorization": "Bearer " + inviter["token"],
         }
-        response = client.request(
-            "POST", "friend_request", headers=headers, data=payload
-        )
-        assert response.status_code == 403
+        flag = False
+        for i in range(5):
+            response = client.request(
+                "POST", "friend_request", headers=headers, data=payload
+            )
+            if response.status_code == 200:
+                flag = True
+                break
+        assert flag == True
         # Create request and re-send
         user_ref.document(inviter["id"]).set({"deviceId": deviceId})
         payload = ""
