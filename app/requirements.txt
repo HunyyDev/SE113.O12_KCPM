@@ -14,3 +14,4 @@ pytest
 pytest-cov
 qrcode==7.4.2
 neo4j==5.14.1
+opencv-python-headless
