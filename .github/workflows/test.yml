@@ -9,13 +9,15 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.7", "3.8", "3.9"]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python 3.8 and install dependencies
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.8"
-          cache: "pip"
+          python-version: ${{ matrix.python-version }}
       - run: pip install -r app/requirements.txt
       - name: install apt dependencies
         uses: awalsh128/cache-apt-pkgs-action@latest
