@@ -10,7 +10,9 @@ app_port: 3000
 
 Require:
 Firebase for Authentication
+
 Supabase for Storage
+
 Neo4j for DB
 
 HOW TO RUN:
